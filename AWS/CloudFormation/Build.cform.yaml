@@ -543,6 +543,7 @@ Resources:
         id: 08a0c879-792e-402a-8076-c9f188afaffd
 # Load Balancers, Servers and Security Groups
 ## Bastion
+## This permits ingress SSH traffic and "Common Management" to the other nodes.
   BastionSG:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -614,6 +615,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: 87cbe0f5-7bd7-43ba-b2d8-1b9cc61cee6c
 ## WebApp
+## This serves web content
   WebAppLBSG:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -717,27 +719,15 @@ Resources:
           - - |
               #!/bin/bash -x
             - |
-              # Install the files and packages from the metadata
-            - '/opt/aws/bin/cfn-init -v '
-            - '         --stack '
-            - !Ref 'AWS::StackName'
-            - '         --resource WebApp1 '
-            - '         --region '
-            - !Ref 'AWS::Region'
-            - |+
-
+              yum install -y httpd
             - |
-              # Signal the status from cfn-init
-            - '/opt/aws/bin/cfn-signal -e $? '
-            - '         --stack '
-            - !Ref 'AWS::StackName'
-            - '         --resource WebApp1 '
-            - '         --region '
-            - !Ref 'AWS::Region'
+              echo "<html><head><title>WebApp1</title></head><body><h1>WebApp1</h1></body></html>" > /var/www/html/index.html
+            - |
+              /bin/systemctl start httpd
             - |+
 
       NetworkInterfaces:
-        - AssociatePublicIpAddress: 'False'
+        - AssociatePublicIpAddress: 'True'
           DeleteOnTermination: 'True'
           SubnetId: !Ref PublicAZ1Subnet
           DeviceIndex: '0'
@@ -747,87 +737,6 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 491d4130-1f07-4b4d-80e9-9a8a3a526909
-      'AWS::CloudFormation::Init':
-        configSets:
-          InstallAndRun:
-            - Install
-            - Configure
-        Install:
-          packages:
-            yum:
-              httpd: []
-          files:
-            /var/www/html/index.html:
-              content: !Join 
-                - ''
-                - - |
-                    <html>
-                  - |2
-                      <head>
-                  - |2
-                        <title>Demo Environment</title>
-                  - |2
-                      </head>
-                  - |2
-                      <body>
-                  - |2
-                        <h1>Demo Environment</h1>
-                  - |2
-                      </body>
-                  - </html>
-              mode: '000600'
-              owner: apache
-              group: apache
-            /etc/cfn/cfn-hup.conf:
-              content: !Join 
-                - ''
-                - - |
-                    [main]
-                  - stack=
-                  - !Ref 'AWS::StackId'
-                  - |+
-
-                  - region=
-                  - !Ref 'AWS::Region'
-                  - |+
-
-              mode: '000400'
-              owner: root
-              group: root
-            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Join 
-                - ''
-                - - |
-                    [cfn-auto-reloader-hook]
-                  - |
-                    triggers=post.update
-                  - |
-                    path=Resources.WebApp1.Metadata.AWS::CloudFormation::Init
-                  - 'action=/opt/aws/bin/cfn-init -v '
-                  - '         --stack '
-                  - !Ref 'AWS::StackName'
-                  - '         --resource WebApp1 '
-                  - '         --configsets InstallAndRun '
-                  - '         --region '
-                  - !Ref 'AWS::Region'
-                  - |+
-
-                  - |
-                    runas=root
-              mode: '000400'
-              owner: root
-              group: root
-          services:
-            sysvinit:
-              httpd:
-                enabled: 'true'
-                ensureRunning: 'true'
-              cfn-hup:
-                enabled: 'true'
-                ensureRunning: 'true'
-                files:
-                  - /etc/cfn/cfn-hup.conf
-                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
   WebApp2:
     Type: 'AWS::EC2::Instance'
     Properties:
@@ -850,27 +759,15 @@ Resources:
           - - |
               #!/bin/bash -x
             - |
-              # Install the files and packages from the metadata
-            - '/opt/aws/bin/cfn-init -v '
-            - '         --stack '
-            - !Ref 'AWS::StackName'
-            - '         --resource WebApp2 '
-            - '         --region '
-            - !Ref 'AWS::Region'
-            - |+
-
+              yum install -y httpd
             - |
-              # Signal the status from cfn-init
-            - '/opt/aws/bin/cfn-signal -e $? '
-            - '         --stack '
-            - !Ref 'AWS::StackName'
-            - '         --resource WebApp2 '
-            - '         --region '
-            - !Ref 'AWS::Region'
+              echo "<html><head><title>WebApp2</title></head><body><h1>WebApp2</h1></body></html>" > /var/www/html/index.html
+            - |
+              /bin/systemctl start httpd
             - |+
 
       NetworkInterfaces:
-        - AssociatePublicIpAddress: 'False'
+        - AssociatePublicIpAddress: 'True'
           DeleteOnTermination: 'True'
           SubnetId: !Ref PublicAZ2Subnet
           DeviceIndex: '0'
@@ -880,88 +777,8 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 9b4996d8-76d0-410a-85b2-b5791aa13753
-      'AWS::CloudFormation::Init':
-        configSets:
-          InstallAndRun:
-            - Install
-            - Configure
-        Install:
-          packages:
-            yum:
-              httpd: []
-          files:
-            /var/www/html/index.html:
-              content: !Join 
-                - ''
-                - - |
-                    <html>
-                  - |2
-                      <head>
-                  - |2
-                        <title>Demo Environment</title>
-                  - |2
-                      </head>
-                  - |2
-                      <body>
-                  - |2
-                        <h1>Demo Environment</h1>
-                  - |2
-                      </body>
-                  - </html>
-              mode: '000600'
-              owner: apache
-              group: apache
-            /etc/cfn/cfn-hup.conf:
-              content: !Join 
-                - ''
-                - - |
-                    [main]
-                  - stack=
-                  - !Ref 'AWS::StackId'
-                  - |+
-
-                  - region=
-                  - !Ref 'AWS::Region'
-                  - |+
-
-              mode: '000400'
-              owner: root
-              group: root
-            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
-              content: !Join 
-                - ''
-                - - |
-                    [cfn-auto-reloader-hook]
-                  - |
-                    triggers=post.update
-                  - |
-                    path=Resources.WebApp2.Metadata.AWS::CloudFormation::Init
-                  - 'action=/opt/aws/bin/cfn-init -v '
-                  - '         --stack '
-                  - !Ref 'AWS::StackName'
-                  - '         --resource WebApp2 '
-                  - '         --configsets InstallAndRun '
-                  - '         --region '
-                  - !Ref 'AWS::Region'
-                  - |+
-
-                  - |
-                    runas=root
-              mode: '000400'
-              owner: root
-              group: root
-          services:
-            sysvinit:
-              httpd:
-                enabled: 'true'
-                ensureRunning: 'true'
-              cfn-hup:
-                enabled: 'true'
-                ensureRunning: 'true'
-                files:
-                  - /etc/cfn/cfn-hup.conf
-                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
 ## Database
+## This does not contain any config - it's here to show how you "would" configure a second tier
   DatabaseSG:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -1030,6 +847,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: 215b2509-b0d9-429d-957f-8a40dfdc0355
 ## Notification Server
+## This does not contain any config - it's here to show where you might put an outbound notification service (e.g. SMTP, Syslog, etc.)
   NotificationSG:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -1062,7 +880,7 @@ Resources:
       NetworkInterfaces:
         - AssociatePublicIpAddress: 'False'
           DeleteOnTermination: 'True'
-          SubnetId: !Ref PrivateAZ2Subnet
+          SubnetId: !Ref PublicAZ2Subnet
           DeviceIndex: '0'
           GroupSet:
             - !Ref NotificationSG
@@ -1071,6 +889,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: 938433ac-b9fd-45de-8ac2-e7f9ebe3f7ef
 ## Monitoring
+## This does not contain any config - it's here to show where you might put a monitoring solution, such as Nagios
   MonitoringSG:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
