@@ -385,17 +385,31 @@ Parameters:
     Description: Second Availability Zone to use
     Type: 'AWS::EC2::AvailabilityZone::Name'
     Default: eu-central-1b
+  ProvisioningMethod:
+    Description: How was this provisioned
+    Type: String
+    Default: CloudFormation
+  OrchestrationMethod:
+    Description: What orchestration tool provisioned this
+    Type: String
+    Default: None
 Resources:
 # VPC
   DemoNetwork:
     Type: 'AWS::EC2::VPC'
     Properties:
       CidrBlock: 10.10.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
       Tags:
         - Key: Name
           Value: DemoNetwork
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: cad62f0d-0fa3-4ffb-ba8b-e0105a215fb3
@@ -407,6 +421,10 @@ Resources:
           Value: InternetGateway
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: ccd87952-210d-498d-8ba0-0772fb2f1a65
@@ -430,6 +448,10 @@ Resources:
           Value: PublicAZ1Subnet
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: ca2fd767-3130-4e40-861e-673e8d78ee5a
@@ -444,6 +466,10 @@ Resources:
           Value: PublicAZ2Subnet
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 41356c17-0971-45ae-aad0-5783024dcbb2
@@ -456,6 +482,10 @@ Resources:
           Value: PublicRoutingTable
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: a0f58d58-d9db-4c9d-b8e3-4f5b9398c0b1
@@ -496,6 +526,10 @@ Resources:
           Value: PrivateAZ1Subnet
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: a3ebeab3-3f21-4c0e-9ddb-388dda810fef
@@ -510,6 +544,10 @@ Resources:
           Value: PrivateAZ2Subnet
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 0d15f27f-8d6c-4b1c-bed7-f99581fd2b8b
@@ -522,6 +560,10 @@ Resources:
           Value: PrivateRoutingTable
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: bcca50e2-1b9b-416a-9b50-6e6120ed935c
@@ -559,6 +601,10 @@ Resources:
           Value: BastionSG
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 58419deb-5a5b-48df-b0c1-56ca9a5626ba
@@ -574,6 +620,10 @@ Resources:
           Value: Bastion
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -611,6 +661,10 @@ Resources:
           Value: CommonManagementSG
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 87cbe0f5-7bd7-43ba-b2d8-1b9cc61cee6c
@@ -635,6 +689,10 @@ Resources:
           Value: WebAppLBSG
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 838505d9-66c8-4f6e-a53a-9e92d7ea9cf4
@@ -694,6 +752,10 @@ Resources:
           Value: WebAppSG
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 95afef30-dc0a-4ab0-8f22-aaa1a89262b5
@@ -709,6 +771,10 @@ Resources:
           Value: WebApp1
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -749,6 +815,10 @@ Resources:
           Value: WebApp2
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -789,6 +859,10 @@ Resources:
           Value: DatabaseSG
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: c73eb110-6a70-4194-a28b-99bb0d646172
@@ -804,6 +878,10 @@ Resources:
           Value: Database1
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -831,6 +909,10 @@ Resources:
           Value: Database2
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -858,6 +940,10 @@ Resources:
           Value: NotificationSG
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e3372fc3-5da6-4008-b022-8adace4b4b94
@@ -873,6 +959,10 @@ Resources:
           Value: NotificationServer
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -900,6 +990,10 @@ Resources:
           Value: MonitoringSG
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
     Metadata:
       'AWS::CloudFormation::Designer':
         id: a9d8dbe5-c027-42a3-bdf2-8e8276c8851e
@@ -915,6 +1009,10 @@ Resources:
           Value: Monitoring1
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -942,6 +1040,10 @@ Resources:
           Value: Monitoring2
         - Key: Env
           Value: Demo
+        - Key: Provisioning
+          Value: "${var.ProvisioningMethod}"
+        - Key: Orchestration
+          Value: "${var.OrchestrationMethod}"
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
