@@ -4,8 +4,10 @@ resource "aws_security_group" "MonitoringSG" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
 
   tags = {
-    Name = "MonitoringSG",
-    Env  = "Demo"
+    Name          = "MonitoringSG",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 
   egress {
@@ -29,8 +31,10 @@ resource "aws_instance" "Monitoring1" {
   associate_public_ip_address = false
 
   tags = {
-    Name = "Monitoring1",
-    Env  = "Demo"
+    Name          = "Monitoring1",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
 
@@ -47,7 +51,9 @@ resource "aws_instance" "Monitoring2" {
   associate_public_ip_address = false
 
   tags = {
-    Name = "Monitoring2",
-    Env  = "Demo"
+    Name          = "Monitoring2",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }

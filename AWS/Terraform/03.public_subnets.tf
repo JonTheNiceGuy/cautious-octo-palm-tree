@@ -4,8 +4,10 @@ resource "aws_subnet" "PublicAZ1Subnet" {
   availability_zone = "${var.Az1}"
 
   tags = {
-    Name = "PublicAZ1Subnet",
-    Env  = "Demo"
+    Name          = "PublicAZ1Subnet",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
 
@@ -15,16 +17,20 @@ resource "aws_subnet" "PublicAZ2Subnet" {
   availability_zone = "${var.Az2}"
   
   tags = {
-    Name = "PublicAZ2Subnet",
-    Env  = "Demo"
+    Name          = "PublicAZ2Subnet",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
 
 resource "aws_route_table" "PublicRoutingTable" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
   tags = {
-    Name = "PublicRoutingTable",
-    Env  = "Demo"
+    Name          = "PublicRoutingTable",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
 

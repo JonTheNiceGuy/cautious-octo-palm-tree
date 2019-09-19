@@ -4,8 +4,10 @@ resource "aws_security_group" "DatabaseSG" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
 
   tags = {
-    Name = "DatabaseSG",
-    Env  = "Demo"
+    Name          = "DatabaseSG",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 
   egress {
@@ -29,8 +31,10 @@ resource "aws_instance" "Database1" {
   associate_public_ip_address = false
 
   tags = {
-    Name = "Database1",
-    Env  = "Demo"
+    Name          = "Database1",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
 
@@ -47,7 +51,9 @@ resource "aws_instance" "Database2" {
   associate_public_ip_address = false
 
   tags = {
-    Name = "Database2",
-    Env  = "Demo"
+    Name          = "Database2",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }

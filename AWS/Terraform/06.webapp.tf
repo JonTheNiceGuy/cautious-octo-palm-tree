@@ -4,8 +4,10 @@ resource "aws_security_group" "WebAppLBSG" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
 
   tags = {
-    Name = "WebAppLBSG",
-    Env  = "Demo"
+    Name          = "WebAppLBSG",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 
   ingress {
@@ -64,8 +66,10 @@ resource "aws_elb" "WebAppLB" {
   idle_timeout = 150
 
   tags = {
-    Name = "WebAppLB",
-    Env  = "Demo"
+    Name          = "WebAppLB",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
 
@@ -75,8 +79,10 @@ resource "aws_security_group" "WebAppSG" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
 
   tags = {
-    Name = "WebAppSG",
-    Env  = "Demo"
+    Name          = "WebAppSG",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 
   ingress {
@@ -130,8 +136,10 @@ resource "aws_instance" "WebApp1" {
   user_data = "${file("user-data.sh")}"
 
   tags = {
-    Name = "WebApp1",
-    Env  = "Demo"
+    Name          = "WebApp1",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
 
@@ -150,7 +158,9 @@ resource "aws_instance" "WebApp2" {
   user_data = "${file("user-data.sh")}"
 
   tags = {
-    Name = "WebApp2",
-    Env  = "Demo"
+    Name          = "WebApp2",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }

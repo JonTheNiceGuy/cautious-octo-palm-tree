@@ -4,8 +4,10 @@ resource "aws_security_group" "BastionSG" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
 
   tags = {
-    Name = "BastionSG",
-    Env  = "Demo"
+    Name          = "BastionSG",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 
   ingress {
@@ -33,8 +35,10 @@ resource "aws_instance" "Bastion" {
   associate_public_ip_address = true
 
   tags = {
-    Name = "Bastion",
-    Env  = "Demo"
+    Name          = "Bastion",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
 
@@ -44,8 +48,10 @@ resource "aws_security_group" "CommonManagementSG" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
 
   tags = {
-    Name = "CommonManagementSG",
-    Env  = "Demo"
+    Name          = "CommonManagementSG",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 
   ingress {

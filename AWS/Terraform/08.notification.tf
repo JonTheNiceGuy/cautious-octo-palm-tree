@@ -4,8 +4,10 @@ resource "aws_security_group" "NotificationSG" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
 
   tags = {
-    Name = "NotificationSG",
-    Env  = "Demo"
+    Name          = "NotificationSG",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 
   egress {
@@ -29,7 +31,9 @@ resource "aws_instance" "NotificationServer" {
   associate_public_ip_address = false
 
   tags = {
-    Name = "NotificationServer",
-    Env  = "Demo"
+    Name          = "NotificationServer",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}"
+    Orchestration = "${var.OrchestrationMethod}"
   }
 }
