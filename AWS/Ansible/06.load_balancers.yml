@@ -1,0 +1,25 @@
+---
+- name: "ELB: WebAppLB"
+  ec2_elb_lb:
+    region: "{{ Region }}"
+    name: WebAppLB
+    state: present
+    subnets: "{{ subnet_PublicAZ1Subnet.subnet.id }},{{ subnet_PublicAZ2Subnet.subnet.id }}"
+    security_group_ids: "{{ sg_WebAppLBSG.group_id }}"
+    instance_ids: 
+    listeners:
+    - protocol: http
+      load_balancer_port: 80
+      instance_port: 80
+    health_check:
+      ping_protocol: http
+      ping_port: 80
+      ping_path: "/"
+      response_timeout: 5
+      interval: 30
+      unhealthy_threshold: 2
+      healthy_threshold: 2
+    idle_timeout: 150
+    tags:
+      Name: WebAppLB
+      Env: Demo

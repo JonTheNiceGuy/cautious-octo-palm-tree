@@ -1,0 +1,24 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    Ami: ami-00aa4671cbf840d82
+    KeyName: Windows_2014-12-07.OpenSSH
+    Az1: eu-central-1a
+    Az2: eu-central-1b
+    ProvisioningMethod: Ansible
+    OrchestratonMethod: None
+    Region: eu-central-1
+  tasks:
+  - name: 01. Create VPC
+    include_tasks: 01.vpc.yml
+  - name: 02. Create Public Subnets
+    include_tasks: 02.public_subnets.yml
+  - name: 03. Create Private Subnets
+    include_tasks: 03.private_subnets.yml
+  - name: 04. Create Security Groups
+    include_tasks: 04.security_groups.yml
+  - name: 05. Create Virtual Machines
+    include_tasks: 05.virtual_machines.yml
+  - name: 06. Create Load Balancers
+    include_tasks: 06.load_balancers.yml

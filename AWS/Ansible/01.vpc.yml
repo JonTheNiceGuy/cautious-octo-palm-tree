@@ -1,0 +1,21 @@
+---
+- name: "VPC: DemoNetwork"
+  ec2_vpc_net:
+    state: present
+    name: DemoNetwork
+    region: "{{ Region }}"
+    cidr_block: 10.10.0.0/16
+    tags:
+      Name: DemoNetwork
+      Env: Demo
+  register: vpc_DemoNetwork
+
+- name: "IGW: InternetGateway"
+  ec2_vpc_igw:
+    state: present
+    region: "{{ Region }}"
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    tags:
+      Name: InternetGateway
+      Env: Demo
+  register: igw_InternetGateway

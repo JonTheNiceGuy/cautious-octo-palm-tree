@@ -1,0 +1,150 @@
+---
+- name: "SG: BastionSG"
+  ec2_group:
+    state: present
+    name: BastionSG
+    description: Bastion security group
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    region: "{{ Region }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: BastionSG
+      Env: Demo
+  register: sg_BastionSG
+
+- name: "SG: MonitoringSG"
+  ec2_group:
+    state: present
+    name: MonitoringSG
+    description: Monitoring security group
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    region: "{{ Region }}"
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: MonitoringSG
+      Env: Demo
+  register: sg_MonitoringSG
+
+- name: "SG: NotificationSG"
+  ec2_group:
+    state: present
+    name: NotificationSG
+    description: Notification security group
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    region: "{{ Region }}"
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: NotificationSG
+      Env: Demo
+  register: sg_NotificationSG
+
+- name: "SG: DatabaseSG"
+  ec2_group:
+    state: present
+    name: DatabaseSG
+    description: Database security group
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    region: "{{ Region }}"
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: DatabaseSG
+      Env: Demo
+  register: sg_DatabaseSG
+
+- name: "SG: CommonManagementSG"
+  ec2_group:
+    state: present
+    name: CommonManagementSG
+    description: Common Management security group
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    region: "{{ Region }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        group_id: "{{ sg_BastionSG.group_id }}"
+      - proto: icmp
+        from_port: -1
+        to_port: -1
+        group_id: "{{ sg_BastionSG.group_id }}"
+      - proto: icmp
+        from_port: -1
+        to_port: -1
+        group_id: "{{ sg_MonitoringSG.group_id }}"
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: CommonManagementSG
+      Env: Demo
+  register: sg_CommonManagementSG
+
+- name: "SG: WebAppLBSG"
+  ec2_group:
+    state: present
+    name: WebAppLBSG
+    description: WebApp ELB security group
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    region: "{{ Region }}"
+    rules:
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: WebAppLBSG
+      Env: Demo
+  register: sg_WebAppLBSG
+
+- name: "SG: WebAppSG"
+  ec2_group:
+    state: present
+    name: WebAppSG
+    description: Common Management security group
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    region: "{{ Region }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        group_id: "{{ sg_WebAppLBSG.group_id }}"
+      - proto: icmp
+        from_port: -1
+        to_port: -1
+        group_id: "{{ sg_WebAppLBSG.group_id }}"
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        group_id: "{{ sg_MonitoringSG.group_id }}"
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        group_id: "{{ sg_BastionSG.group_id }}"
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: WebAppSG
+      Env: Demo
+  register: sg_WebAppSG
+

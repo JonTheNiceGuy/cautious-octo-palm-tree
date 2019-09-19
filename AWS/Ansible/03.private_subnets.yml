@@ -1,0 +1,36 @@
+---
+  - name: "Subnet: PrivateAZ1Subnet"
+    ec2_vpc_subnet:
+      state: present
+      vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+      az: "{{ Az1 }}"
+      region: "{{ Region }}"
+      cidr: 10.10.21.0/24
+      tags:
+        Name: PrivateAZ1Subnet
+        Env: Demo
+    register: subnet_PrivateAZ1Subnet
+    
+  - name: "Subnet: PrivateAZ2Subnet"
+    ec2_vpc_subnet:
+      state: present
+      vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+      az: "{{ Az2 }}"
+      region: "{{ Region }}"
+      cidr: 10.10.22.0/24
+      tags:
+        Name: PrivateAZ2Subnet
+        Env: Demo
+    register: subnet_PrivateAZ2Subnet
+
+  - name: "RT: PrivateRoutingTable"
+    ec2_vpc_route_table:
+      state: present
+      vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+      region: "{{ Region }}"
+      subnets: 
+      - "{{ subnet_PrivateAZ1Subnet.subnet.id }}"
+      - "{{ subnet_PrivateAZ2Subnet.subnet.id }}"
+      tags:
+        Name: PrivateRoutingTable
+        Env: Demo

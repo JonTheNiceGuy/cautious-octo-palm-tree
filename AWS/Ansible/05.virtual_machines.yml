@@ -1,0 +1,137 @@
+---
+- name: "Bastion"
+  ec2:
+    state: present
+    zone: "{{ Az1 }}"
+    image: "{{ Ami }}"
+    instance_type: "t2.nano"
+    key_name: "{{ KeyName }}"
+    vpc_subnet_id: "{{ subnet_PublicAZ1Subnet.subnet.id }}"
+    region: "{{ Region }}"
+    group_id: 
+    - "{{ sg_BastionSG.group_id }}"
+    assign_public_ip: true
+    instance_tags:
+      Name: Bastion
+      Env: Demo
+
+- name: "WebApp1"
+  ec2:
+    state: present
+    zone: "{{ Az1 }}"
+    image: "{{ Ami }}"
+    instance_type: "t2.nano"
+    key_name: "{{ KeyName }}"
+    vpc_subnet_id: "{{ subnet_PublicAZ1Subnet.subnet.id }}"
+    region: "{{ Region }}"
+    group_id: 
+    - "{{ sg_WebAppSG.group_id }}"
+    - "{{ sg_CommonManagementSG.group_id }}"
+    assign_public_ip: true
+    user_data: "{% include('user-data.sh') %}"
+    instance_tags:
+      Name: WebApp1
+      Env: Demo
+
+- name: "WebApp2"
+  ec2:
+    state: present
+    zone: "{{ Az2 }}"
+    image: "{{ Ami }}"
+    instance_type: "t2.nano"
+    key_name: "{{ KeyName }}"
+    vpc_subnet_id: "{{ subnet_PublicAZ2Subnet.subnet.id }}"
+    region: "{{ Region }}"
+    group_id: 
+    - "{{ sg_WebAppSG.group_id }}"
+    - "{{ sg_CommonManagementSG.group_id }}"
+    assign_public_ip: true
+    user_data: "{% include('user-data.sh') %}"
+    instance_tags:
+      Name: WebApp2
+      Env: Demo
+
+- name: "Database1"
+  ec2:
+    state: present
+    zone: "{{ Az1 }}"
+    image: "{{ Ami }}"
+    instance_type: "t2.nano"
+    key_name: "{{ KeyName }}"
+    vpc_subnet_id: "{{ subnet_PrivateAZ1Subnet.subnet.id }}"
+    region: "{{ Region }}"
+    group_id:
+    - "{{ sg_DatabaseSG.group_id }}"
+    - "{{ sg_CommonManagementSG.group_id }}"
+    assign_public_ip: false
+    instance_tags:
+      Name: Database1
+      Env: Demo
+
+- name: "Database2"
+  ec2:
+    state: present
+    zone: "{{ Az2 }}"
+    image: "{{ Ami }}"
+    instance_type: "t2.nano"
+    key_name: "{{ KeyName }}"
+    vpc_subnet_id: "{{ subnet_PrivateAZ2Subnet.subnet.id }}"
+    region: "{{ Region }}"
+    group_id:
+    - "{{ sg_DatabaseSG.group_id }}"
+    - "{{ sg_CommonManagementSG.group_id }}"
+    assign_public_ip: false
+    instance_tags:
+      Name: Database2
+      Env: Demo
+
+- name: "NotificationServer"
+  ec2:
+    state: present
+    zone: "{{ Az2 }}"
+    image: "{{ Ami }}"
+    instance_type: "t2.nano"
+    key_name: "{{ KeyName }}"
+    vpc_subnet_id: "{{ subnet_PublicAZ2Subnet.subnet.id }}"
+    region: "{{ Region }}"
+    group_id:
+    - "{{ sg_NotificationSG.group_id }}"
+    - "{{ sg_CommonManagementSG.group_id }}"
+    assign_public_ip: false
+    instance_tags:
+      Name: NotificationServer
+      Env: Demo
+
+- name: "Monitoring1"
+  ec2:
+    state: present
+    zone: "{{ Az1 }}"
+    image: "{{ Ami }}"
+    instance_type: "t2.nano"
+    key_name: "{{ KeyName }}"
+    vpc_subnet_id: "{{ subnet_PrivateAZ1Subnet.subnet.id }}"
+    region: "{{ Region }}"
+    group_id:
+    - "{{ sg_MonitoringSG.group_id }}"
+    - "{{ sg_CommonManagementSG.group_id }}"
+    assign_public_ip: false
+    instance_tags:
+      Name: Monitoring1
+      Env: Demo
+
+- name: "Monitoring2"
+  ec2:
+    state: present
+    zone: "{{ Az2 }}"
+    image: "{{ Ami }}"
+    instance_type: "t2.nano"
+    key_name: "{{ KeyName }}"
+    vpc_subnet_id: "{{ subnet_PrivateAZ2Subnet.subnet.id }}"
+    region: "{{ Region }}"
+    group_id:
+    - "{{ sg_MonitoringSG.group_id }}"
+    - "{{ sg_CommonManagementSG.group_id }}"
+    assign_public_ip: false
+    instance_tags:
+      Name: Monitoring2
+      Env: Demo
