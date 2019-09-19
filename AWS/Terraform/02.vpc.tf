@@ -11,7 +11,7 @@ resource "aws_vpc" "DemoNetwork" {
 resource "aws_internet_gateway" "InternetGateway" {
   vpc_id = "${aws_vpc.DemoNetwork.id}"
   tags = {
-    Name = "DemoNetwork",
+    Name = "InternetGateway",
     Env  = "Demo"
   }
 }
