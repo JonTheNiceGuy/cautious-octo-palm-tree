@@ -6,7 +6,7 @@ resource "aws_subnet" "PublicAZ1Subnet" {
   tags = {
     Name          = "PublicAZ1Subnet",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
@@ -19,7 +19,7 @@ resource "aws_subnet" "PublicAZ2Subnet" {
   tags = {
     Name          = "PublicAZ2Subnet",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
@@ -29,7 +29,7 @@ resource "aws_route_table" "PublicRoutingTable" {
   tags = {
     Name          = "PublicRoutingTable",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }

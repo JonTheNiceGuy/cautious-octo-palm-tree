@@ -13,7 +13,7 @@ resource "aws_internet_gateway" "InternetGateway" {
   tags = {
     Name          = "InternetGateway",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }

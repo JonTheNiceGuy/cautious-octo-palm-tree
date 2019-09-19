@@ -6,7 +6,7 @@ resource "aws_security_group" "BastionSG" {
   tags = {
     Name          = "BastionSG",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 
@@ -37,7 +37,7 @@ resource "aws_instance" "Bastion" {
   tags = {
     Name          = "Bastion",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
@@ -50,7 +50,7 @@ resource "aws_security_group" "CommonManagementSG" {
   tags = {
     Name          = "CommonManagementSG",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 

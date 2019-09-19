@@ -6,7 +6,7 @@ resource "aws_security_group" "NotificationSG" {
   tags = {
     Name          = "NotificationSG",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 
@@ -33,7 +33,7 @@ resource "aws_instance" "NotificationServer" {
   tags = {
     Name          = "NotificationServer",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }

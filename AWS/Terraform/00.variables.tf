@@ -12,6 +12,11 @@ variable "KeyName" {
   default = "Windows_2014-12-07.OpenSSH"
 }
 
+variable "Region" {
+  description = "Region to run in"
+  default = "eu-central-1"
+}
+
 variable "Az1" {
   description = "First Availability Zone to use"
   default = "eu-central-1a"

@@ -6,7 +6,7 @@ resource "aws_security_group" "MonitoringSG" {
   tags = {
     Name          = "MonitoringSG",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 
@@ -33,7 +33,7 @@ resource "aws_instance" "Monitoring1" {
   tags = {
     Name          = "Monitoring1",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
@@ -53,7 +53,7 @@ resource "aws_instance" "Monitoring2" {
   tags = {
     Name          = "Monitoring2",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }

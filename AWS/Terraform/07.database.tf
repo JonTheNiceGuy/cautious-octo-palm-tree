@@ -6,7 +6,7 @@ resource "aws_security_group" "DatabaseSG" {
   tags = {
     Name          = "DatabaseSG",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 
@@ -33,7 +33,7 @@ resource "aws_instance" "Database1" {
   tags = {
     Name          = "Database1",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
@@ -53,7 +53,7 @@ resource "aws_instance" "Database2" {
   tags = {
     Name          = "Database2",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }

@@ -6,7 +6,7 @@ resource "aws_security_group" "WebAppLBSG" {
   tags = {
     Name          = "WebAppLBSG",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 
@@ -68,7 +68,7 @@ resource "aws_elb" "WebAppLB" {
   tags = {
     Name          = "WebAppLB",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
@@ -81,7 +81,7 @@ resource "aws_security_group" "WebAppSG" {
   tags = {
     Name          = "WebAppSG",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 
@@ -138,7 +138,7 @@ resource "aws_instance" "WebApp1" {
   tags = {
     Name          = "WebApp1",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
@@ -160,7 +160,7 @@ resource "aws_instance" "WebApp2" {
   tags = {
     Name          = "WebApp2",
     Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}"
+    Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
