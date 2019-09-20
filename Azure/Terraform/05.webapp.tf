@@ -1,16 +1,14 @@
 locals {
-  WebAppCount  = 2
   WebAppLayout = ["${var.Az1}", "${var.Az2}"]
 }
 
-resource "azurerm_virtual_machine" "WebApp" {
-  name                  = "WebApp${count.index}"
-  zones                 = ["${element(local.WebAppLayout, count.index)}"]
+resource "azurerm_virtual_machine" "WebApp1" {
+  name                  = "WebApp1"
+  zones                 = ["${element(local.WebAppLayout, 1)}"]
   location              = "${azurerm_resource_group.ResourceGroup.location}"
   resource_group_name   = "${azurerm_resource_group.ResourceGroup.name}"
-  network_interface_ids = ["${element(azurerm_network_interface.WebAppNIC.*.id, count.index)}"]
+  network_interface_ids = ["${azurerm_network_interface.WebApp1NIC.id}"]
   vm_size               = "Standard_B1ls"
-  count                 = "${local.WebAppCount}"
 
   delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
@@ -23,14 +21,14 @@ resource "azurerm_virtual_machine" "WebApp" {
   }
 
   storage_os_disk {
-    name              = "WebApp${count.index}-os-disk1"
+    name              = "WebApp1-os-disk1"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
   }
 
   os_profile {
-    computer_name  = "WebApp${count.index}"
+    computer_name  = "WebApp1"
     admin_username = "${var.vm_user}"
     custom_data    = "${file("user-data.sh")}"
   }
@@ -51,13 +49,65 @@ resource "azurerm_virtual_machine" "WebApp" {
   }
 }
 
-resource "azurerm_public_ip" "WebAppIP" {
-  name                = "WebApp${count.index}IP"
-  location            = "${azurerm_resource_group.ResourceGroup.location}"
-  resource_group_name = "${azurerm_resource_group.ResourceGroup.name}"
-  allocation_method   = "Dynamic"
-  count               = "${local.WebAppCount}"
-  zones               = ["${element(local.WebAppLayout, count.index)}"]
+resource "azurerm_virtual_machine" "WebApp2" {
+  name                  = "WebApp2"
+  zones                 = ["${element(local.WebAppLayout, 2)}"]
+  location              = "${azurerm_resource_group.ResourceGroup.location}"
+  resource_group_name   = "${azurerm_resource_group.ResourceGroup.name}"
+  network_interface_ids = ["${azurerm_network_interface.WebApp2NIC.id}"]
+  vm_size               = "Standard_B1ls"
+
+  delete_os_disk_on_termination    = true
+  delete_data_disks_on_termination = true
+
+  storage_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+
+  storage_os_disk {
+    name              = "WebApp2-os-disk1"
+    caching           = "ReadWrite"
+    create_option     = "FromImage"
+    managed_disk_type = "Standard_LRS"
+  }
+
+  os_profile {
+    computer_name  = "WebApp2"
+    admin_username = "${var.vm_user}"
+    custom_data    = "${file("user-data.sh")}"
+  }
+
+  os_profile_linux_config {
+    disable_password_authentication = true
+    ssh_keys {
+      key_data = "${file("id_rsa.pub")}"
+      path     = "/home/${var.vm_user}/.ssh/authorized_keys"
+    }
+  }
+
+  tags = {
+    WebServer     = "True",
+    Env           = "Demo",
+    Provisioning  = "${var.ProvisioningMethod}",
+    Orchestration = "${var.OrchestrationMethod}"
+  }
+}
+
+resource "azurerm_network_interface" "WebApp1NIC" {
+  name                      = "WebApp1NIC"
+  location                  = "${azurerm_resource_group.ResourceGroup.location}"
+  resource_group_name       = "${azurerm_resource_group.ResourceGroup.name}"
+  network_security_group_id = "${azurerm_network_security_group.WebAppNSG.id}"
+
+  ip_configuration {
+    name                                    = "WebApp1-nic-ip"
+    subnet_id                               = "${azurerm_subnet.PublicSubnet.id}"
+    private_ip_address_allocation           = "Dynamic"
+    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool1.id}"]
+  }
 
   tags = {
     Env           = "Demo",
@@ -66,18 +116,16 @@ resource "azurerm_public_ip" "WebAppIP" {
   }
 }
 
-resource "azurerm_network_interface" "WebAppNIC" {
-  name                      = "WebApp${count.index}NIC"
+resource "azurerm_network_interface" "WebApp2NIC" {
+  name                      = "WebApp2NIC"
   location                  = "${azurerm_resource_group.ResourceGroup.location}"
   resource_group_name       = "${azurerm_resource_group.ResourceGroup.name}"
   network_security_group_id = "${azurerm_network_security_group.WebAppNSG.id}"
-  count                     = "${local.WebAppCount}"
 
   ip_configuration {
-    name                                    = "WebApp-nic-ip"
+    name                                    = "WebApp2-nic-ip"
     subnet_id                               = "${azurerm_subnet.PublicSubnet.id}"
     private_ip_address_allocation           = "Dynamic"
-    public_ip_address_id                    = "${element(azurerm_public_ip.WebAppIP.*.id, count.index)}"
     load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool1.id}"]
   }
 
