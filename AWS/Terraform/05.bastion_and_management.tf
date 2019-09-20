@@ -26,7 +26,7 @@ resource "aws_security_group" "BastionSG" {
 }
 
 resource "aws_instance" "Bastion" {
-  availability_zone = "${var.Az1}"
+  availability_zone = "${local.RegionAz1}"
   ami = "${var.AmiName}"
   instance_type = "t2.nano"
   key_name = "${var.KeyName}"
@@ -36,6 +36,7 @@ resource "aws_instance" "Bastion" {
 
   tags = {
     Name          = "Bastion",
+    BastionServer = "True",
     Env           = "Demo",
     Provisioning  = "${var.ProvisioningMethod}",
     Orchestration = "${var.OrchestrationMethod}"

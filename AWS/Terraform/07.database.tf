@@ -19,7 +19,7 @@ resource "aws_security_group" "DatabaseSG" {
 }
 
 resource "aws_instance" "Database1" {
-  availability_zone = "${var.Az1}"
+  availability_zone = "${local.RegionAz1}"
   ami = "${var.AmiName}"
   instance_type = "t2.nano"
   key_name = "${var.KeyName}"
@@ -39,7 +39,7 @@ resource "aws_instance" "Database1" {
 }
 
 resource "aws_instance" "Database2" {
-  availability_zone = "${var.Az2}"
+  availability_zone = "${local.RegionAz2}"
   ami = "${var.AmiName}"
   instance_type = "t2.nano"
   key_name = "${var.KeyName}"

@@ -1,7 +1,7 @@
 resource "aws_subnet" "PublicAZ1Subnet" {
   vpc_id     = "${aws_vpc.DemoNetwork.id}"
   cidr_block = "10.10.11.0/24"
-  availability_zone = "${var.Az1}"
+  availability_zone = "${local.RegionAz1}"
 
   tags = {
     Name          = "PublicAZ1Subnet",
@@ -14,7 +14,7 @@ resource "aws_subnet" "PublicAZ1Subnet" {
 resource "aws_subnet" "PublicAZ2Subnet" {
   vpc_id     = "${aws_vpc.DemoNetwork.id}"
   cidr_block = "10.10.12.0/24"
-  availability_zone = "${var.Az2}"
+  availability_zone = "${local.RegionAz2}"
   
   tags = {
     Name          = "PublicAZ2Subnet",

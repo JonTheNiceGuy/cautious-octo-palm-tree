@@ -19,12 +19,12 @@ variable "Region" {
 
 variable "Az1" {
   description = "First Availability Zone to use"
-  default = "eu-central-1a"
+  default = "a"
 }
 
 variable "Az2" {
   description = "Second Availability Zone to use"
-  default = "eu-central-1b"
+  default = "b"
 }
 
 variable "ProvisioningMethod" {
@@ -35,4 +35,9 @@ variable "ProvisioningMethod" {
 variable "OrchestrationMethod" {
   description = "What orchestration tool provisioned this"
   default = "None"
+}
+
+locals {
+  RegionAz1 = "${var.Region}${var.Az1}"
+  RegionAz2 = "${var.Region}${var.Az2}"
 }
