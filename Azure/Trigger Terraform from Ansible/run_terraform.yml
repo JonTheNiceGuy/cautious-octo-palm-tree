@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+  - terraform:
+      project_path: 'Terraform/'
+      force_init: yes
+      state: absent
+      lock: true
+      variables:
+        ProvisioningMethod: Terraform
+        OrchestrationMethod: Ansible
