@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  gather_facts: false
+  tasks:
+  - name: Deploy the Cloudformation Stack
+    cloudformation:
+      stack_name: "demo"
+      state: "present"
+      region: "eu-central-1"
+      disable_rollback: false
+      template: "../CloudFormation/Build.cform.yaml"
+      template_parameters:
+        OrchestrationMethod: "Ansible"
+        KeyName: "Windows_2014-12-07.OpenSSH"
