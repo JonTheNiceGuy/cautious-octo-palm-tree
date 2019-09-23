@@ -1,0 +1,1398 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Region": {
+            "defaultValue": "centralus",
+            "type": "string"
+        },
+        "ProvisioningMethod": {
+            "defaultValue": "ARM Template",
+            "type": "string"
+        },
+        "OrchestrationMethod": {
+            "defaultValue": "None",
+            "type": "string"
+        },
+        "vm_user": {
+            "defaultValue": "azure-user",
+            "type": "string"
+        },
+        "Az1": {
+            "defaultValue": 1,
+            "type": "int"
+        },
+        "Az2": {
+            "defaultValue": 2,
+            "type": "int"
+        },
+        "PublicKey": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-04-01",
+            "name": "demo201909js",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "enabled": true
+                        },
+                        "blob": {
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                }
+            }
+        },
+        
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2019-04-01",
+            "name": "demo201909js/default",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', 'demo201909js')]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-04-01",
+            "name": "demo201909js/default/bootdiagnostics-webapp1-09bdaa0c-f04b-41b5-a8df-e3258f5ef9f4",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', 'demo201909js', 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', 'demo201909js')]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            },
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            }
+        },
+        
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-06-01",
+            "name": "BastionNSG",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Bastion-I-100",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "0.0.0.0/0",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-06-01",
+            "name": "DatabaseNSG",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "CommonManagement-I-100",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[concat(reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, '/32')]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-06-01",
+            "name": "MonitoringNSG",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "CommonManagement-I-100",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[concat(reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, '/32')]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-06-01",
+            "name": "NotificationServerNSG",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "CommonManagement-I-100",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[concat(reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, '/32')]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-06-01",
+            "name": "WebAppNSG",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "WebServer": "True"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "LB-HTTP",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "10.10.0.0/16",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 300,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "CommonManagement-I-100",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[concat(reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, '/32')]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-06-01",
+            "name": "BastionIP",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "sku": {
+                "name": "Basic",
+                "tier": "Regional"
+            },
+            "zones": [
+                "[parameters('Az1')]"
+            ],
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-06-01",
+            "name": "WebAppLBIP",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+            }
+        },
+        
+        {
+            "type": "Microsoft.Network/routeTables",
+            "apiVersion": "2019-06-01",
+            "name": "PrivateRouteTable",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "disableBgpRoutePropagation": false,
+                "routes": [
+                    {
+                        "name": "Deny_Internet_Access",
+                        "properties": {
+                            "addressPrefix": "0.0.0.0/0",
+                            "nextHopType": "None"
+                        }
+                    }
+                ]
+            }
+        },
+        
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-06-01",
+            "name": "DemoNetwork",
+            "location": "[parameters('Region')]",
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.10.0.0/16"
+                    ]
+                },
+                "enableDdosProtection": false,
+                "enableVmProtection": false
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2019-06-01",
+            "name": "DemoNetwork/PrivateSubnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'DemoNetwork')]"
+            ],
+            "properties": {
+                "addressPrefix": "10.10.21.0/24",
+                "serviceEndpoints": [],
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2019-06-01",
+            "name": "DemoNetwork/PublicSubnet",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'DemoNetwork')]"
+            ],
+            "properties": {
+                "addressPrefix": "10.10.11.0/24",
+                "serviceEndpoints": [],
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2019-06-01",
+            "name": "WebAppLB",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'WebAppLBIP')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "LoadBalancerFrontEnd",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'WebAppLBIP')]"
+                            },
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "WebAppLBPool",
+                        "properties": {
+                            "provisioningState": "Succeeded"
+                        }
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "http",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'WebAppLB/frontendIPConfigurations/LoadBalancerFrontEnd')]"
+                            },
+                            "frontendPort": 80,
+                            "backendPort": 80,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "enableTcpReset": false,
+                            "loadDistribution": "Default",
+                            "disableOutboundSnat": false,
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'WebAppLB'), '/backendAddressPools/WebAppLBPool')]"
+                            },
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'WebAppLB'), '/probes/http')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "http",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ]
+            }
+        },
+        
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "Bastion",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'BastionNIC')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "BastionServer": "True"
+            },
+            "zones": [
+                "[parameters('Az1')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1ls"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "Bastion-os-disk1",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                            
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "Bastion",
+                    "adminUsername": "[parameters('vm_user')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azure-user/.ssh/authorized_keys",
+                                    "keyData": "[parameters('PublicKey')]"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'BastionNIC')]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "Database1",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'Database1NIC')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "DatabaseServer": "True"
+            },
+            "zones": [
+                "[parameters('Az1')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1ls"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "Database1-os-disk1",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                            
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "Database1",
+                    "adminUsername": "[parameters('vm_user')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azure-user/.ssh/authorized_keys",
+                                    "keyData": "[parameters('PublicKey')]"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'Database1NIC')]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "Database2",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'Database2NIC')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "DatabaseServer": "True"
+            },
+            "zones": [
+                "[parameters('Az2')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1ls"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "Database2-os-disk1",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "Database2",
+                    "adminUsername": "[parameters('vm_user')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azure-user/.ssh/authorized_keys",
+                                    "keyData": "[parameters('PublicKey')]"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'Database2NIC')]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "Monitoring1",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'Monitoring1NIC')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "MonitoringServer": "True"
+            },
+            "zones": [
+                "[parameters('Az1')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1ls"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "Monitoring1-os-disk1",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "Monitoring1",
+                    "adminUsername": "[parameters('vm_user')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azure-user/.ssh/authorized_keys",
+                                    "keyData": "[parameters('PublicKey')]"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'Monitoring1NIC')]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "Monitoring2",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'Monitoring2NIC')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "MonitoringServer": "True"
+            },
+            "zones": [
+                "[parameters('Az2')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1ls"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "Monitoring2-os-disk1",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "Monitoring2",
+                    "adminUsername": "[parameters('vm_user')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azure-user/.ssh/authorized_keys",
+                                    "keyData": "[parameters('PublicKey')]"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'Monitoring2NIC')]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "NotificationServer",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'NotificationServerNIC')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "NotificationServerServer": "True"
+            },
+            "zones": [
+                "[parameters('Az2')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1ls"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "NotificationServer-os-disk1",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "NotificationServer",
+                    "adminUsername": "[parameters('vm_user')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azure-user/.ssh/authorized_keys",
+                                    "keyData": "[parameters('PublicKey')]"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'NotificationServerNIC')]",
+                            "properties": {
+                                "primary": false
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "WebApp1",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'WebApp1NIC')]",
+                "[resourceId('Microsoft.Storage/StorageAccounts', 'demo201909js')]"
+            ],
+            "tags": {
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "Env": "Demo",
+                "WebServer": "True"
+            },
+            "zones": [
+                "[parameters('Az1')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1ls"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "WebApp1-os-disk1",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "WebApp1",
+                    "adminUsername": "[parameters('vm_user')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azure-user/.ssh/authorized_keys",
+                                    "keyData": "[parameters('PublicKey')]"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "customData": "[base64('#! /bin/bash -x\napt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" > /var/www/html/index.html\n/bin/systemctl start apache2')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'WebApp1NIC')]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "https://demo201909js.blob.core.windows.net/"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "WebApp2",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'WebApp2NIC')]",
+                "[resourceId('Microsoft.Storage/StorageAccounts', 'demo201909js')]"
+            ],
+            "tags": {
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "Env": "Demo",
+                "WebServer": "True"
+            },
+            "zones": [
+                "[parameters('Az2')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1ls"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "WebApp2-os-disk1",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "WebApp2",
+                    "adminUsername": "[parameters('vm_user')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/azure-user/.ssh/authorized_keys",
+                                    "keyData": "[parameters('PublicKey')]"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "customData": "[base64('#! /bin/bash -x\napt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" > /var/www/html/index.html\n/bin/systemctl start apache2')]"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'WebApp2NIC')]"
+                        }
+                    ]
+                }
+            }
+        },
+        
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "name": "BastionNIC",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'BastionIP')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PublicSubnet')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'BastionNSG')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "Bastion-nic-ip",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'BastionIP')]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PublicSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'BastionNSG')]"
+                },
+                "primary": true,
+                "tapConfigurations": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "name": "Database1NIC",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'DatabaseNSG')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "Database1-nic-ip",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": [],
+                    "internalDomainNameSuffix": "sgipgn4uy0tulgbyzlur3osowa.gx.internal.cloudapp.net"
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'DatabaseNSG')]"
+                },
+                "primary": true,
+                "tapConfigurations": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "name": "Database2NIC",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'DatabaseNSG')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "Database2-nic-ip",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": [],
+                    "internalDomainNameSuffix": "sgipgn4uy0tulgbyzlur3osowa.gx.internal.cloudapp.net"
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'DatabaseNSG')]"
+                },
+                "primary": true,
+                "tapConfigurations": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "name": "Monitoring1NIC",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'MonitoringNSG')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "Monitoring1-nic-ip",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": [],
+                    "internalDomainNameSuffix": "sgipgn4uy0tulgbyzlur3osowa.gx.internal.cloudapp.net"
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'MonitoringNSG')]"
+                },
+                "primary": true,
+                "tapConfigurations": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "name": "Monitoring2NIC",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'MonitoringNSG')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "Monitoring2-nic-ip",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": [],
+                    "internalDomainNameSuffix": "sgipgn4uy0tulgbyzlur3osowa.gx.internal.cloudapp.net"
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'MonitoringNSG')]"
+                },
+                "primary": true,
+                "tapConfigurations": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "name": "NotificationServerNIC",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PublicSubnet')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'NotificationServerNSG')]"
+            ],
+            "tags": {
+                "Env": "Demo",
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "NotificationServer-nic-ip",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PublicSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": [],
+                    "internalDomainNameSuffix": "sgipgn4uy0tulgbyzlur3osowa.gx.internal.cloudapp.net"
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'NotificationServerNSG')]"
+                },
+                "primary": true,
+                "tapConfigurations": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "name": "WebApp1NIC",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]",
+                "[resourceId('Microsoft.Network/loadBalancers', 'WebAppLB')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebAppNSG')]"
+            ],
+            "tags": {
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "Env": "Demo",
+                "WebServer": "True"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "WebApp1-nic-ip",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4",
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'WebAppLB'), '/backendAddressPools/WebAppLBPool')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebAppNSG')]"
+                },
+                "primary": true,
+                "tapConfigurations": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-06-01",
+            "name": "WebApp2NIC",
+            "location": "[parameters('Region')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]",
+                "[resourceId('Microsoft.Network/loadBalancers', 'WebAppLB')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebAppNSG')]"
+            ],
+            "tags": {
+                "Orchestration": "[parameters('OrchestrationMethod')]",
+                "Provisioning": "[parameters('ProvisioningMethod')]",
+                "Env": "Demo",
+                "WebServer": "True"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "WebApp2-nic-ip",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4",
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'WebAppLB'), '/backendAddressPools/WebAppLBPool')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebAppNSG')]"
+                },
+                "primary": true,
+                "tapConfigurations": []
+            }
+        }
+    ]
+}
