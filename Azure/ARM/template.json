@@ -61,6 +61,23 @@
                             "sourceAddressPrefixes": [],
                             "destinationAddressPrefixes": []
                         }
+                    },
+                    {
+                        "name": "Bastion-I-800",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "8888",
+                            "sourceAddressPrefix": "10.0.0.0/8",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 800,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
                     }
                 ]
             }
@@ -898,7 +915,7 @@
                     },
                     "secrets": [],
                     "allowExtensionOperations": true,
-                    "customData": "[base64(concat('#! /bin/bash -x\nhttp_proxy=http://', reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, ':8888 /usr/bin/apt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" | tee /var/www/html/index.html\n/bin/systemctl start apache2'))]"
+                    "customData": "[base64(concat('#! /bin/bash -x\nexport http_proxy=http://', reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, ':8888\n/usr/bin/apt update\n/usr/bin/apt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" | tee /var/www/html/index.html\n/bin/systemctl start apache2'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -967,7 +984,7 @@
                     },
                     "secrets": [],
                     "allowExtensionOperations": true,
-                    "customData": "[base64(concat('#! /bin/bash -x\nhttp_proxy=http://', reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, ':8888 apt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" > /var/www/html/index.html\n/bin/systemctl start apache2'))]"
+                    "customData": "[base64(concat('#! /bin/bash -x\nexport http_proxy=http://', reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, ':8888\n/usr/bin/apt update\n/usr/bin/apt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" | tee /var/www/html/index.html\n/bin/systemctl start apache2'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
