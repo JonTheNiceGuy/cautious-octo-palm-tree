@@ -14,7 +14,7 @@
             "defaultValue": "None",
             "type": "string"
         },
-        "vm_user": {
+        "VmUser": {
             "defaultValue": "azure-user",
             "type": "string"
         },
@@ -32,77 +32,6 @@
     },
     "variables": {},
     "resources": [
-        
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "apiVersion": "2019-04-01",
-            "name": "demo201909js",
-            "location": "[parameters('Region')]",
-            "tags": {
-                "Env": "Demo",
-                "Orchestration": "[parameters('OrchestrationMethod')]",
-                "Provisioning": "[parameters('ProvisioningMethod')]"
-            },
-            "sku": {
-                "name": "Standard_LRS",
-                "tier": "Standard"
-            },
-            "kind": "Storage",
-            "properties": {
-                "networkAcls": {
-                    "bypass": "AzureServices",
-                    "virtualNetworkRules": [],
-                    "ipRules": [],
-                    "defaultAction": "Allow"
-                },
-                "supportsHttpsTrafficOnly": true,
-                "encryption": {
-                    "services": {
-                        "file": {
-                            "enabled": true
-                        },
-                        "blob": {
-                            "enabled": true
-                        }
-                    },
-                    "keySource": "Microsoft.Storage"
-                }
-            }
-        },
-        
-        {
-            "type": "Microsoft.Storage/storageAccounts/blobServices",
-            "apiVersion": "2019-04-01",
-            "name": "demo201909js/default",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', 'demo201909js')]"
-            ],
-            "properties": {
-                "cors": {
-                    "corsRules": []
-                },
-                "deleteRetentionPolicy": {
-                    "enabled": false
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
-            "apiVersion": "2019-04-01",
-            "name": "demo201909js/default/bootdiagnostics-webapp1-09bdaa0c-f04b-41b5-a8df-e3258f5ef9f4",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', 'demo201909js', 'default')]",
-                "[resourceId('Microsoft.Storage/storageAccounts', 'demo201909js')]"
-            ],
-            "properties": {
-                "publicAccess": "None"
-            },
-            "tags": {
-                "Env": "Demo",
-                "Orchestration": "[parameters('OrchestrationMethod')]",
-                "Provisioning": "[parameters('ProvisioningMethod')]"
-            }
-        },
         
         {
             "type": "Microsoft.Network/networkSecurityGroups",
@@ -449,7 +378,7 @@
                         "properties": {
                             "provisioningState": "Succeeded",
                             "frontendIPConfiguration": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'WebAppLB/frontendIPConfigurations/LoadBalancerFrontEnd')]"
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'WebAppLB'), '/frontendIPConfigurations/LoadBalancerFrontEnd')]"
                             },
                             "frontendPort": 80,
                             "backendPort": 80,
@@ -526,7 +455,7 @@
                 },
                 "osProfile": {
                     "computerName": "Bastion",
-                    "adminUsername": "[parameters('vm_user')]",
+                    "adminUsername": "[parameters('VmUser')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
                         "ssh": {
@@ -540,7 +469,8 @@
                         "provisionVMAgent": true
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true
+                    "allowExtensionOperations": true,
+                    "customData": "[base64('#! /bin/bash -x\n/usr/bin/apt install -y tinyproxy\n/bin/sed -i\"\" \"s/Allow 127.0.0.1/Allow 10.0.0.0\\/8/\" /etc/tinyproxy/tinyproxy.conf\n/bin/systemctl restart tinyproxy')]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -598,7 +528,7 @@
                 },
                 "osProfile": {
                     "computerName": "Database1",
-                    "adminUsername": "[parameters('vm_user')]",
+                    "adminUsername": "[parameters('VmUser')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
                         "ssh": {
@@ -669,7 +599,7 @@
                 },
                 "osProfile": {
                     "computerName": "Database2",
-                    "adminUsername": "[parameters('vm_user')]",
+                    "adminUsername": "[parameters('VmUser')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
                         "ssh": {
@@ -740,7 +670,7 @@
                 },
                 "osProfile": {
                     "computerName": "Monitoring1",
-                    "adminUsername": "[parameters('vm_user')]",
+                    "adminUsername": "[parameters('VmUser')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
                         "ssh": {
@@ -811,7 +741,7 @@
                 },
                 "osProfile": {
                     "computerName": "Monitoring2",
-                    "adminUsername": "[parameters('vm_user')]",
+                    "adminUsername": "[parameters('VmUser')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
                         "ssh": {
@@ -882,7 +812,7 @@
                 },
                 "osProfile": {
                     "computerName": "NotificationServer",
-                    "adminUsername": "[parameters('vm_user')]",
+                    "adminUsername": "[parameters('VmUser')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
                         "ssh": {
@@ -917,7 +847,7 @@
             "location": "[parameters('Region')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'WebApp1NIC')]",
-                "[resourceId('Microsoft.Storage/StorageAccounts', 'demo201909js')]"
+                "[resourceId('Microsoft.Compute/virtualMachines', 'Bastion')]"
             ],
             "tags": {
                 "Orchestration": "[parameters('OrchestrationMethod')]",
@@ -953,7 +883,7 @@
                 },
                 "osProfile": {
                     "computerName": "WebApp1",
-                    "adminUsername": "[parameters('vm_user')]",
+                    "adminUsername": "[parameters('VmUser')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
                         "ssh": {
@@ -968,7 +898,7 @@
                     },
                     "secrets": [],
                     "allowExtensionOperations": true,
-                    "customData": "[base64('#! /bin/bash -x\napt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" > /var/www/html/index.html\n/bin/systemctl start apache2')]"
+                    "customData": "[base64(concat('#! /bin/bash -x\nhttp_proxy=http://', reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, ':8888 /usr/bin/apt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" | tee /var/www/html/index.html\n/bin/systemctl start apache2'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -976,12 +906,6 @@
                             "id": "[resourceId('Microsoft.Network/networkInterfaces', 'WebApp1NIC')]"
                         }
                     ]
-                },
-                "diagnosticsProfile": {
-                    "bootDiagnostics": {
-                        "enabled": true,
-                        "storageUri": "https://demo201909js.blob.core.windows.net/"
-                    }
                 }
             }
         },
@@ -992,7 +916,7 @@
             "location": "[parameters('Region')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'WebApp2NIC')]",
-                "[resourceId('Microsoft.Storage/StorageAccounts', 'demo201909js')]"
+                "[resourceId('Microsoft.Compute/virtualMachines', 'Bastion')]"
             ],
             "tags": {
                 "Orchestration": "[parameters('OrchestrationMethod')]",
@@ -1028,7 +952,7 @@
                 },
                 "osProfile": {
                     "computerName": "WebApp2",
-                    "adminUsername": "[parameters('vm_user')]",
+                    "adminUsername": "[parameters('VmUser')]",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": true,
                         "ssh": {
@@ -1043,7 +967,7 @@
                     },
                     "secrets": [],
                     "allowExtensionOperations": true,
-                    "customData": "[base64('#! /bin/bash -x\napt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" > /var/www/html/index.html\n/bin/systemctl start apache2')]"
+                    "customData": "[base64(concat('#! /bin/bash -x\nhttp_proxy=http://', reference('BastionNIC').ipConfigurations[0].properties.privateIPAddress, ':8888 apt install -y apache2\necho \"<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>\" > /var/www/html/index.html\n/bin/systemctl start apache2'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -1312,7 +1236,7 @@
             "name": "WebApp1NIC",
             "location": "[parameters('Region')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PublicSubnet')]",
                 "[resourceId('Microsoft.Network/loadBalancers', 'WebAppLB')]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebAppNSG')]"
             ],
@@ -1329,7 +1253,7 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PublicSubnet')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4",
@@ -1356,7 +1280,7 @@
             "name": "WebApp2NIC",
             "location": "[parameters('Region')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PublicSubnet')]",
                 "[resourceId('Microsoft.Network/loadBalancers', 'WebAppLB')]",
                 "[resourceId('Microsoft.Network/networkSecurityGroups', 'WebAppNSG')]"
             ],
@@ -1373,7 +1297,7 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PrivateSubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'DemoNetwork', 'PublicSubnet')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4",
