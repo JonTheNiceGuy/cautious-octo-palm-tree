@@ -8,6 +8,8 @@
     tags:
       Name: DemoNetwork
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
   register: vpc_DemoNetwork
 
 - name: "IGW: InternetGateway"
@@ -18,4 +20,6 @@
     tags:
       Name: InternetGateway
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
   register: igw_InternetGateway

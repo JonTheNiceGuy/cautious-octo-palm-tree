@@ -14,6 +14,8 @@
     instance_tags:
       Name: Bastion
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
 
 - name: "WebApp1"
   ec2:
@@ -32,6 +34,8 @@
     instance_tags:
       Name: WebApp1
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
 
 - name: "WebApp2"
   ec2:
@@ -50,6 +54,8 @@
     instance_tags:
       Name: WebApp2
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
 
 - name: "Database1"
   ec2:
@@ -67,6 +73,8 @@
     instance_tags:
       Name: Database1
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
 
 - name: "Database2"
   ec2:
@@ -84,6 +92,8 @@
     instance_tags:
       Name: Database2
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
 
 - name: "NotificationServer"
   ec2:
@@ -101,6 +111,8 @@
     instance_tags:
       Name: NotificationServer
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
 
 - name: "Monitoring1"
   ec2:
@@ -118,6 +130,8 @@
     instance_tags:
       Name: Monitoring1
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
 
 - name: "Monitoring2"
   ec2:
@@ -135,3 +149,5 @@
     instance_tags:
       Name: Monitoring2
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"

@@ -23,3 +23,5 @@
     tags:
       Name: WebAppLB
       Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"

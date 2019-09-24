@@ -1,39 +1,45 @@
 ---
-  - name: "Subnet: PublicAZ1Subnet"
-    ec2_vpc_subnet:
-      state: present
-      vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
-      az: "{{ Az1 }}"
-      region: "{{ Region }}"
-      cidr: 10.10.11.0/24
-      tags:
-        Name: PublicAZ1Subnet
-        Env: Demo
-    register: subnet_PublicAZ1Subnet
-    
-  - name: "Subnet: PublicAZ2Subnet"
-    ec2_vpc_subnet:
-      state: present
-      vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
-      az: "{{ Az2 }}"
-      region: "{{ Region }}"
-      cidr: 10.10.12.0/24
-      tags:
-        Name: PublicAZ2Subnet
-        Env: Demo
-    register: subnet_PublicAZ2Subnet
+- name: "Subnet: PublicAZ1Subnet"
+  ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    az: "{{ Az1 }}"
+    region: "{{ Region }}"
+    cidr: 10.10.11.0/24
+    tags:
+      Name: PublicAZ1Subnet
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: subnet_PublicAZ1Subnet
+  
+- name: "Subnet: PublicAZ2Subnet"
+  ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    az: "{{ Az2 }}"
+    region: "{{ Region }}"
+    cidr: 10.10.12.0/24
+    tags:
+      Name: PublicAZ2Subnet
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: subnet_PublicAZ2Subnet
 
-  - name: "RT: PublicRoutingTable"
-    ec2_vpc_route_table:
-      state: present
-      vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
-      region: "{{ Region }}"
-      subnets: 
-      - "{{ subnet_PublicAZ1Subnet.subnet.id }}"
-      - "{{ subnet_PublicAZ2Subnet.subnet.id }}"
-      routes: 
-      - dest: 0.0.0.0/0
-        gateway_id: "{{ igw_InternetGateway.gateway_id }}"
-      tags:
-        Name: PublicRoutingTable
-        Env: Demo
+- name: "RT: PublicRoutingTable"
+  ec2_vpc_route_table:
+    state: present
+    vpc_id: "{{ vpc_DemoNetwork.vpc.id }}"
+    region: "{{ Region }}"
+    subnets: 
+    - "{{ subnet_PublicAZ1Subnet.subnet.id }}"
+    - "{{ subnet_PublicAZ2Subnet.subnet.id }}"
+    routes: 
+    - dest: 0.0.0.0/0
+      gateway_id: "{{ igw_InternetGateway.gateway_id }}"
+    tags:
+      Name: PublicRoutingTable
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"

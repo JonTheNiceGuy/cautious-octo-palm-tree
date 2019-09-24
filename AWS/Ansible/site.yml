@@ -1,15 +1,16 @@
 ---
 - hosts: localhost
   gather_facts: false
-  vars:
-    Ami: ami-00aa4671cbf840d82
-    KeyName: Windows_2014-12-07.OpenSSH
-    Az1: eu-central-1a
-    Az2: eu-central-1b
-    ProvisioningMethod: Ansible
-    OrchestratonMethod: None
-    Region: eu-central-1
   tasks:
+  - name: "Set Facts"
+    set_fact:
+      Ami: "{{ Ami | default('ami-00aa4671cbf840d82') }}"
+      KeyName: "{{ KeyName | default('Windows_2014-12-07.OpenSSH') }}"
+      Az1: "{{ Az1 | default('eu-central-1a') }}"
+      Az2: "{{ Az2 | default('eu-central-1b') }}"
+      ProvisioningMethod: "{{ ProvisioningMethod | default('Ansible') }}"
+      OrchestrationMethod: "{{ OrchestrationMethod | default('None') }}"
+      Region: "{{ Region | default('eu-central-1') }}"
   - name: 01. Create VPC
     include_tasks: 01.vpc.yml
   - name: 02. Create Public Subnets

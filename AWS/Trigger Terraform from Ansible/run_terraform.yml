@@ -8,5 +8,4 @@
       state: absent
       lock: true
       variables:
-        ProvisioningMethod: Terraform
         OrchestrationMethod: Ansible
