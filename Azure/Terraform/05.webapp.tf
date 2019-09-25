@@ -30,7 +30,15 @@ resource "azurerm_virtual_machine" "WebApp1" {
   os_profile {
     computer_name  = "WebApp1"
     admin_username = "${var.vm_user}"
-    custom_data    = "${file("user-data.sh")}"
+    custom_data    = <<-EOT
+#! /bin/bash -x
+export http_proxy=http://${azurerm_network_interface.BastionNIC.private_ip_address}:8888
+until /usr/bin/curl http://security.ubuntu.com >/dev/null 2>/dev/null ; do /bin/sleep 10 ; done
+/usr/bin/apt update
+/usr/bin/apt install -y apache2
+echo "<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>" | tee /var/www/html/index.html
+/bin/systemctl start apache2
+    EOT
   }
 
   os_profile_linux_config {
@@ -77,7 +85,15 @@ resource "azurerm_virtual_machine" "WebApp2" {
   os_profile {
     computer_name  = "WebApp2"
     admin_username = "${var.vm_user}"
-    custom_data    = "${file("user-data.sh")}"
+    custom_data    = <<-EOT
+#! /bin/bash -x
+export http_proxy=http://${azurerm_network_interface.BastionNIC.private_ip_address}:8888
+until /usr/bin/curl http://security.ubuntu.com >/dev/null 2>/dev/null ; do /bin/sleep 10 ; done
+/usr/bin/apt update
+/usr/bin/apt install -y apache2
+echo "<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>" | tee /var/www/html/index.html
+/bin/systemctl start apache2
+    EOT
   }
 
   os_profile_linux_config {
