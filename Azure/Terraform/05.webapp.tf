@@ -33,12 +33,10 @@ resource "azurerm_virtual_machine" "WebApp1" {
     custom_data    = <<-EOT
 #! /bin/bash -x
 export http_proxy=http://${azurerm_network_interface.BastionNIC.private_ip_address}:8888
-until /usr/bin/curl http://security.ubuntu.com >/dev/null 2>/dev/null ; do /bin/sleep 10 ; done
-/usr/bin/apt update
-/usr/bin/apt install -y apache2
+until /usr/bin/apt install -y apache2 ; do /usr/bin/apt update ; /bin/sleep 10 ; done
 echo "<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>" | tee /var/www/html/index.html
 /bin/systemctl start apache2
-    EOT
+EOT
   }
 
   os_profile_linux_config {
@@ -88,12 +86,10 @@ resource "azurerm_virtual_machine" "WebApp2" {
     custom_data    = <<-EOT
 #! /bin/bash -x
 export http_proxy=http://${azurerm_network_interface.BastionNIC.private_ip_address}:8888
-until /usr/bin/curl http://security.ubuntu.com >/dev/null 2>/dev/null ; do /bin/sleep 10 ; done
-/usr/bin/apt update
-/usr/bin/apt install -y apache2
+until /usr/bin/apt install -y apache2 ; do /usr/bin/apt update ; /bin/sleep 10 ; done
 echo "<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>" | tee /var/www/html/index.html
 /bin/systemctl start apache2
-    EOT
+EOT
   }
 
   os_profile_linux_config {

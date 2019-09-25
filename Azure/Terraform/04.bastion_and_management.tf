@@ -26,6 +26,12 @@ resource "azurerm_virtual_machine" "Bastion" {
   os_profile {
     computer_name  = "Bastion"
     admin_username = "${var.vm_user}"
+    custom_data    = <<-EOT
+#! /bin/bash -x
+/usr/bin/apt install -y tinyproxy
+/bin/sed -i"" "s/Allow 127.0.0.1/Allow 10.0.0.0\\/8/" /etc/tinyproxy/tinyproxy.conf
+/bin/systemctl restart tinyproxy
+EOT
   }
 
   os_profile_linux_config {
