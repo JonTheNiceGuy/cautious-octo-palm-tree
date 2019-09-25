@@ -118,7 +118,7 @@ resource "azurerm_network_interface" "WebApp1NIC" {
     name                                    = "WebApp1-nic-ip"
     subnet_id                               = "${azurerm_subnet.PublicSubnet.id}"
     private_ip_address_allocation           = "Dynamic"
-    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool.id}"]
+    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLBBackEndPool.id}"]
   }
 
   tags = {
@@ -138,7 +138,7 @@ resource "azurerm_network_interface" "WebApp2NIC" {
     name                                    = "WebApp2-nic-ip"
     subnet_id                               = "${azurerm_subnet.PublicSubnet.id}"
     private_ip_address_allocation           = "Dynamic"
-    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool.id}"]
+    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLBBackEndPool.id}"]
   }
 
   tags = {
@@ -216,7 +216,7 @@ resource "azurerm_lb" "WebAppLB" {
   }
 }
 
-resource "azurerm_lb_backend_address_pool" "WebAppLB_BackEndPool" {
+resource "azurerm_lb_backend_address_pool" "WebAppLBBackEndPool" {
   resource_group_name = "${azurerm_resource_group.ResourceGroup.name}"
   loadbalancer_id     = "${azurerm_lb.WebAppLB.id}"
   name                = "WebAppLBBackEndPool"
@@ -242,7 +242,7 @@ resource "azurerm_lb_rule" "WebAppLB_HTTP" {
   backend_port                   = 80
   frontend_ip_configuration_name = "WebAppLBFrontEnd"
   probe_id                       = "${azurerm_lb_probe.WebAppLB_HTTP_Probe.id}"
-  backend_address_pool_id        = "${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool.id}"
+  backend_address_pool_id        = "${azurerm_lb_backend_address_pool.WebAppLBBackEndPool.id}"
   disable_outbound_snat          = false
   load_distribution              = "Default"
   idle_timeout_in_minutes        = 4
