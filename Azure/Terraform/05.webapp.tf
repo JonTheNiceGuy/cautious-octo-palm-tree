@@ -106,7 +106,7 @@ resource "azurerm_network_interface" "WebApp1NIC" {
     name                                    = "WebApp1-nic-ip"
     subnet_id                               = "${azurerm_subnet.PublicSubnet.id}"
     private_ip_address_allocation           = "Dynamic"
-    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool1.id}"]
+    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool.id}"]
   }
 
   tags = {
@@ -126,7 +126,7 @@ resource "azurerm_network_interface" "WebApp2NIC" {
     name                                    = "WebApp2-nic-ip"
     subnet_id                               = "${azurerm_subnet.PublicSubnet.id}"
     private_ip_address_allocation           = "Dynamic"
-    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool1.id}"]
+    load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool.id}"]
   }
 
   tags = {
@@ -156,8 +156,20 @@ resource "azurerm_network_security_group" "WebAppNSG" {
   resource_group_name = "${azurerm_resource_group.ResourceGroup.name}"
 
   security_rule {
-    name                       = "WebApp-I-100"
+    name                       = "CommonManagement-I-100"
     priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "${azurerm_network_interface.BastionNIC.private_ip_address}/32"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "WebApp-I-101"
+    priority                   = 101
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -192,18 +204,35 @@ resource "azurerm_lb" "WebAppLB" {
   }
 }
 
-resource "azurerm_lb_backend_address_pool" "WebAppLB_BackEndPool1" {
+resource "azurerm_lb_backend_address_pool" "WebAppLB_BackEndPool" {
   resource_group_name = "${azurerm_resource_group.ResourceGroup.name}"
   loadbalancer_id     = "${azurerm_lb.WebAppLB.id}"
-  name                = "WebAppLBBackEndPool1"
+  name                = "WebAppLBBackEndPool"
 }
 
-resource "azurerm_lb_probe" "lb_probe" {
+resource "azurerm_lb_probe" "WebAppLB_HTTP_Probe" {
   resource_group_name = "${azurerm_resource_group.ResourceGroup.name}"
   loadbalancer_id     = "${azurerm_lb.WebAppLB.id}"
-  name                = "tcpProbe"
-  protocol            = "tcp"
+  name                = "WebAppLB_HTTP_Probe"
+  protocol            = "http"
+  request_path        = "/"
   port                = 80
   interval_in_seconds = 5
   number_of_probes    = 2
+}
+
+resource "azurerm_lb_rule" "WebAppLB_HTTP" {
+  resource_group_name            = "${azurerm_resource_group.ResourceGroup.name}"
+  loadbalancer_id                = "${azurerm_lb.WebAppLB.id}"
+  name                           = "WebAppLB_HTTP"
+  protocol                       = "Tcp"
+  frontend_port                  = 80
+  backend_port                   = 80
+  frontend_ip_configuration_name = "WebAppLBFrontEnd"
+  probe_id                       = "${azurerm_lb_probe.WebAppLB_HTTP_Probe.id}"
+  backend_address_pool_id        = "${azurerm_lb_backend_address_pool.WebAppLB_BackEndPool.id}"
+  disable_outbound_snat          = false
+  load_distribution              = "Default"
+  idle_timeout_in_minutes        = 4
+  enable_floating_ip             = false
 }
