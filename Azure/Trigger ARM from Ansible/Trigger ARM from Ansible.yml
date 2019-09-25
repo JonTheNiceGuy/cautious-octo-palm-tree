@@ -1,0 +1,33 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    DefaultPublicKey: "{% include('id_rsa.pub') %}"
+  tasks:
+  - name: "Create the Resource Group"
+    azure_rm_resourcegroup:
+      name: DemoResourceGroup
+      location: "{{ Region | default('centralus') }}"
+      tags: 
+        Env: Demo
+        Provisioning: "Ansible"
+        Orchestration: "None"
+    register: rg_demoresourcegroup
+
+  - name: Run the ARM Deployment
+    azure_rm_deployment:
+      resource_group_name: DemoResourceGroup
+      location: "{{ Region | default('centralus') }}"
+      deployment_name: DemoDeployment
+      tags: 
+        Env: Demo
+        Provisioning: "Ansible"
+        Orchestration: "None"
+      template: "{% include('template.json') %}"
+      parameters:
+        Region:
+          value: "{{ Region | default('centralus') }}"
+        OrchestrationMethod:
+          value: "{{ OrchestrationMethod | default('Ansible') }}"
+        PublicKey:
+          value: "{{ PublicKey | default(DefaultPublicKey) }}"
