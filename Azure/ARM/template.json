@@ -447,7 +447,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1ls"
+                    "vmSize": "Standard_B1s"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -520,7 +520,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1ls"
+                    "vmSize": "Standard_B1s"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -592,7 +592,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1ls"
+                    "vmSize": "Standard_B1s"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -663,7 +663,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1ls"
+                    "vmSize": "Standard_B1s"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -734,7 +734,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1ls"
+                    "vmSize": "Standard_B1s"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -805,7 +805,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1ls"
+                    "vmSize": "Standard_B1s"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -877,7 +877,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1ls"
+                    "vmSize": "Standard_B1s"
                 },
                 "storageProfile": {
                     "imageReference": {
@@ -946,7 +946,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_B1ls"
+                    "vmSize": "Standard_B1s"
                 },
                 "storageProfile": {
                     "imageReference": {

@@ -4,7 +4,7 @@ resource "azurerm_virtual_machine" "Bastion" {
   location              = "${azurerm_resource_group.ResourceGroup.location}"
   resource_group_name   = "${azurerm_resource_group.ResourceGroup.name}"
   network_interface_ids = ["${azurerm_network_interface.BastionNIC.id}"]
-  vm_size               = "Standard_B1ls"
+  vm_size               = "Standard_B1s"
 
   delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
