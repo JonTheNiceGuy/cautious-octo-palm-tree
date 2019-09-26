@@ -107,28 +107,3 @@ resource "azurerm_network_security_group" "BastionNSG" {
     Orchestration = "${var.OrchestrationMethod}"
   }
 }
-
-resource "azurerm_network_security_group" "CommonManagementNSG" {
-  name                = "CommonManagementNSG"
-  location            = "${azurerm_resource_group.ResourceGroup.location}"
-  resource_group_name = "${azurerm_resource_group.ResourceGroup.name}"
-
-  security_rule {
-    name                       = "CommonManagement-I-100"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "${azurerm_network_interface.BastionNIC.private_ip_address}/32"
-    destination_address_prefix = "*"
-  }
-
-  tags = {
-    Env           = "Demo",
-    Provisioning  = "${var.ProvisioningMethod}",
-    Orchestration = "${var.OrchestrationMethod}"
-  }
-}
-
