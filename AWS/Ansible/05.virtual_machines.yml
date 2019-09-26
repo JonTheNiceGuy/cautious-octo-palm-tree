@@ -11,11 +11,18 @@
     group_id: 
     - "{{ sg_BastionSG.group_id }}"
     assign_public_ip: true
+    user_data: |
+      #!/bin/bash -x
+      yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      yum install -y tinyproxy
+      /bin/sed -i"" "s/Allow 127.0.0.1/Allow 10.0.0.0\\/8/" /etc/tinyproxy/tinyproxy.conf
+      /bin/systemctl enable --now tinyproxy
     instance_tags:
       Name: Bastion
       Env: Demo
       Provisioning: "{{ ProvisioningMethod }}"
       Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_bastion
 
 - name: "WebApp1"
   ec2:
@@ -36,6 +43,7 @@
       Env: Demo
       Provisioning: "{{ ProvisioningMethod }}"
       Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_webapp1
 
 - name: "WebApp2"
   ec2:
@@ -56,6 +64,7 @@
       Env: Demo
       Provisioning: "{{ ProvisioningMethod }}"
       Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_webapp2
 
 - name: "Database1"
   ec2:
@@ -75,6 +84,7 @@
       Env: Demo
       Provisioning: "{{ ProvisioningMethod }}"
       Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_database1
 
 - name: "Database2"
   ec2:
@@ -94,6 +104,7 @@
       Env: Demo
       Provisioning: "{{ ProvisioningMethod }}"
       Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_database2
 
 - name: "NotificationServer"
   ec2:
@@ -108,11 +119,27 @@
     - "{{ sg_NotificationSG.group_id }}"
     - "{{ sg_CommonManagementSG.group_id }}"
     assign_public_ip: false
+    user_data: |
+      #!/bin/bash -x
+      export http_proxy=http://{{ vm_bastion.instances[0].private_ip }}:8888
+      export https_proxy=$http_proxy
+      until /usr/bin/amazon-linux-extras install -y ansible2 ; do /bin/sleep 10 ; done
+      echo --- > /tmp/playbook.yml
+      echo "- hosts: localhost" >> /tmp/playbook.yml
+      echo "  gather_facts: false" >> /tmp/playbook.yml
+      echo "  tasks:" >> /tmp/playbook.yml
+      echo "  - copy:" >> /tmp/playbook.yml
+      echo "      content: Confirmed" >> /tmp/playbook.yml
+      echo "      dest: /var/log/ansible_run.out" >> /tmp/playbook.yml
+      sleep 5
+      ansible-playbook /tmp/playbook.yml
+      sleep 5
     instance_tags:
       Name: NotificationServer
       Env: Demo
       Provisioning: "{{ ProvisioningMethod }}"
       Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_notification
 
 - name: "Monitoring1"
   ec2:
@@ -132,6 +159,7 @@
       Env: Demo
       Provisioning: "{{ ProvisioningMethod }}"
       Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_monitoring1
 
 - name: "Monitoring2"
   ec2:
@@ -151,3 +179,4 @@
       Env: Demo
       Provisioning: "{{ ProvisioningMethod }}"
       Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_monitoring2
