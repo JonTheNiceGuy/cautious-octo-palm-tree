@@ -407,9 +407,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: cad62f0d-0fa3-4ffb-ba8b-e0105a215fb3
@@ -422,9 +422,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: ccd87952-210d-498d-8ba0-0772fb2f1a65
@@ -449,9 +449,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: ca2fd767-3130-4e40-861e-673e8d78ee5a
@@ -467,9 +467,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 41356c17-0971-45ae-aad0-5783024dcbb2
@@ -483,9 +483,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: a0f58d58-d9db-4c9d-b8e3-4f5b9398c0b1
@@ -527,9 +527,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: a3ebeab3-3f21-4c0e-9ddb-388dda810fef
@@ -545,9 +545,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 0d15f27f-8d6c-4b1c-bed7-f99581fd2b8b
@@ -561,9 +561,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: bcca50e2-1b9b-416a-9b50-6e6120ed935c
@@ -596,15 +596,19 @@ Resources:
           FromPort: '22'
           ToPort: '22'
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '8888'
+          ToPort: '8888'
+          CidrIp: 10.10.0.0/16
       Tags:
         - Key: Name
           Value: BastionSG
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 58419deb-5a5b-48df-b0c1-56ca9a5626ba
@@ -621,13 +625,23 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
             VolumeSize: '8'
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash -x
+          yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+          yum install -y tinyproxy
+          /bin/sed -i"" "s/Allow 127.0.0.1/Allow 10.0.0.0\\/8/" /etc/tinyproxy/tinyproxy.conf
+          /bin/sed -i"" "s/\#AllowTcpForwarding.*/AllowTcpForwarding yes/" /etc/ssh/sshd_config
+          /bin/sed -i"" "s/\#GatewayPorts.*/GatewayPorts yes/" /etc/ssh/sshd_config
+          /bin/systemctl enable --now tinyproxy
+          /bin/systemctl restart sshd
       NetworkInterfaces:
         - AssociatePublicIpAddress: 'True'
           DeleteOnTermination: 'True'
@@ -662,9 +676,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 87cbe0f5-7bd7-43ba-b2d8-1b9cc61cee6c
@@ -690,9 +704,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 838505d9-66c8-4f6e-a53a-9e92d7ea9cf4
@@ -753,9 +767,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 95afef30-dc0a-4ab0-8f22-aaa1a89262b5
@@ -772,26 +786,19 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
             VolumeSize: '8'
-      UserData: !Base64 
-        'Fn::Join':
-          - ''
-          - - |
-              #!/bin/bash -x
-            - |
-              yum install -y httpd
-            - |
-              echo "<html><head><title>WebApp1</title></head><body><h1>WebApp1</h1></body></html>" > /var/www/html/index.html
-            - |
-              /bin/systemctl start httpd
-            - |+
-
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash -x
+          yum install -y httpd
+          echo "<html><head><title>WebApp1 - $(hostname)</title></head><body><h1>WebApp1 - $(hostname)</h1></body></html>" > /var/www/html/index.html
+          /bin/systemctl start httpd
       NetworkInterfaces:
         - AssociatePublicIpAddress: 'True'
           DeleteOnTermination: 'True'
@@ -816,26 +823,19 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
             VolumeSize: '8'
-      UserData: !Base64 
-        'Fn::Join':
-          - ''
-          - - |
-              #!/bin/bash -x
-            - |
-              yum install -y httpd
-            - |
-              echo "<html><head><title>WebApp2</title></head><body><h1>WebApp2</h1></body></html>" > /var/www/html/index.html
-            - |
-              /bin/systemctl start httpd
-            - |+
-
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -x
+          yum install -y httpd
+          echo "<html><head><title>WebApp1 - $(hostname)</title></head><body><h1>WebApp1 - $(hostname)</h1></body></html>" > /var/www/html/index.html
+          /bin/systemctl start httpd
       NetworkInterfaces:
         - AssociatePublicIpAddress: 'True'
           DeleteOnTermination: 'True'
@@ -860,9 +860,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: c73eb110-6a70-4194-a28b-99bb0d646172
@@ -879,9 +879,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -910,9 +910,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -941,9 +941,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e3372fc3-5da6-4008-b022-8adace4b4b94
@@ -960,13 +960,32 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
             VolumeSize: '8'
+      UserData: 
+        Fn::Base64:
+          Fn::Sub:
+            - |
+              #!/bin/bash -x
+              export http_proxy=http://${BastionIP}:8888
+              export https_proxy=$http_proxy
+              until /usr/bin/amazon-linux-extras install -y ansible2 ; do /bin/sleep 10 ; done
+              echo --- > /tmp/playbook.yml
+              echo "- hosts: localhost" >> /tmp/playbook.yml
+              echo "  gather_facts: false" >> /tmp/playbook.yml
+              echo "  tasks:" >> /tmp/playbook.yml
+              echo "  - copy:" >> /tmp/playbook.yml
+              echo "      content: Confirmed" >> /tmp/playbook.yml
+              echo "      dest: /var/log/ansible_run.out" >> /tmp/playbook.yml
+              sleep 5
+              ansible-playbook /tmp/playbook.yml
+              sleep 5
+            - BastionIP: !GetAtt Bastion.PrivateIp
       NetworkInterfaces:
         - AssociatePublicIpAddress: 'False'
           DeleteOnTermination: 'True'
@@ -991,9 +1010,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
     Metadata:
       'AWS::CloudFormation::Designer':
         id: a9d8dbe5-c027-42a3-bdf2-8e8276c8851e
@@ -1010,9 +1029,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -1041,9 +1060,9 @@ Resources:
         - Key: Env
           Value: Demo
         - Key: Provisioning
-          Value: "${var.ProvisioningMethod}"
+          Value: !Ref ProvisioningMethod
         - Key: Orchestration
-          Value: "${var.OrchestrationMethod}"
+          Value: !Ref OrchestrationMethod
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
