@@ -418,7 +418,7 @@
                         "name": "WebAppLB_HTTP_Probe",
                         "properties": {
                             "protocol": "Http",
-                            "path": "/",
+                            "requestPath": "/",
                             "port": 80,
                             "intervalInSeconds": 5,
                             "numberOfProbes": 2
@@ -843,7 +843,8 @@
                         "provisionVMAgent": true
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true
+                    "allowExtensionOperations": true,
+                    "customData": "[base64(concat('#! /bin/bash -x\n/usr/bin/apt update\n/usr/bin/apt install -y ansible\necho --- > /tmp/playbook.yml\necho \"- hosts: localhost\" >> /tmp/playbook.yml\necho \"  gather_facts: false\" >> /tmp/playbook.yml\necho \"  tasks:\" >> /tmp/playbook.yml\necho \"  - copy:\" >> /tmp/playbook.yml\necho \"      content: Confirmed\" >> /tmp/playbook.yml\necho \"      dest: /var/log/ansible_run.out\" >> /tmp/playbook.yml\nsleep 5\nansible-playbook /tmp/playbook.yml\nsleep 5'))]"
                 },
                 "networkProfile": {
                     "networkInterfaces": [
