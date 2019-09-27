@@ -1,0 +1,31 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    DefaultPublicKey: "{% include('id_rsa.pub') %}"
+  tasks:
+  - name: "Set Facts"
+    set_fact:
+      Region: "{{ Region | default('centralus') }}"
+      ProvisioningMethod: "{{ ProvisioningMethod | default('Ansible') }}"
+      OrchestrationMethod: "{{ OrchestrationMethod | default('None') }}"
+      VmUser: "{{ VmUser | default('azure-user') }}"
+      Az1: "{{ Az1 | default('1') }}"
+      Az2: "{{ Az2 | default('2') }}"
+      PublicKey: "{{ PublicKey | default(DefaultPublicKey) }}"
+  - name: 00. Create Resource Group
+    include_tasks: 00.resource_group.yml
+  - name: 01. Create VNet
+    include_tasks: 01.vnet.yml
+  - name: 02. Create Subnets
+    include_tasks: 02.subnets.yml
+  - name: 03. Create Bastion
+    include_tasks: 03.bastion.yml
+  - name: 04. Create WebApp and WebAppLB
+    include_tasks: 04.webapp.yml
+  - name: 05. Create Database
+    include_tasks: 05.database.yml
+  - name: 06. Create Notification Server
+    include_tasks: 06.notification.yml
+  - name: 07. Create Monitoring
+    include_tasks: 07.monitoring.yml

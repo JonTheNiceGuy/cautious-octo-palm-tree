@@ -1,0 +1,12 @@
+---
+- name: "VNET: DemoNetwork"
+  azure_rm_virtualnetwork:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    name: DemoNetwork
+    location: "{{ Region }}"
+    address_prefixes_cidr: 10.10.0.0/16
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: vnet_demonetwork

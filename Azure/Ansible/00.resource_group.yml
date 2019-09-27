@@ -1,0 +1,10 @@
+---
+- name: "RG: DemoResourceGroup"
+  azure_rm_resourcegroup:
+    name: DemoResourceGroup
+    location: "{{ Region }}"
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: rg_demoresourcegroup

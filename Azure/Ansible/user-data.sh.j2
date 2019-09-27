@@ -1,0 +1,5 @@
+#! /bin/bash -x
+export http_proxy=http://{{ nic_bastionnic.state.ip_configurations[0].private_ip_address }}:8888
+until /usr/bin/apt install -y apache2 ; do /usr/bin/apt update ; /bin/sleep 10 ; done
+echo "<html><head><title>$(hostname)</title></head><body><h1>$(hostname)</h1></body></html>" | tee /var/www/html/index.html
+/bin/systemctl start apache2

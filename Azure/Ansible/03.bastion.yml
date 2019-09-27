@@ -1,0 +1,93 @@
+---
+- name: "NSG: BastionNSG"
+  azure_rm_securitygroup:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: BastionNSG
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+
+    rules:
+    - name: Bastion-I-100
+      priority: 100
+      direction: Inbound
+      access: Allow
+      protocol: Tcp
+      destination_port_range: 22
+      source_address_prefix: 0.0.0.0/0
+  register: nsg_bastionnsg
+
+- name: "IP: BastionIP"
+  azure_rm_publicipaddress:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: BastionIP
+    allocation_method: Dynamic
+    # zones: "{{ Az1 }}"
+    # Above doesn't appear to be supported in Ansible2.8 or devel at 2019-09-26
+
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: ip_bastionip
+
+- name: "NIC: BastionNIC"
+  azure_rm_networkinterface:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: BastionNIC
+    virtual_network: "{{ vnet_demonetwork.state.name }}"
+    subnet_name: "{{ subnet_public.state.name }}"
+    security_group: "{{ nsg_bastionnsg.state.name }}"
+    ip_configurations:
+    - name: Bastion-nic-ip
+      public_ip_address_name: "{{ ip_bastionip.state.name }}"
+      primary: yes
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: nic_bastionnic
+
+- name: "VM: Bastion"
+  azure_rm_virtualmachine:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: Bastion
+    vm_size: Standard_B1s
+    # zones: 
+    # - "{{ Az1 }}"
+    # Unable to use Zones for VMs here due to https://github.com/ansible/ansible/issues/62861
+    network_interface_names: "{{ nic_bastionnic.state.name }}"
+
+    image:
+      publisher: "Canonical"
+      offer: "UbuntuServer"
+      sku: "18.04-LTS"
+      version: "latest"
+
+    admin_username: "{{ VmUser }}"
+    ssh_public_keys: 
+    - path: "/home/{{ VmUser }}/.ssh/authorized_keys"
+      key_data: "{{ PublicKey }}"
+    ssh_password_enabled: false
+
+    managed_disk_type: Standard_LRS
+    os_disk_name: Bastion-os-disk1
+    os_disk_caching: ReadWrite
+
+    custom_data: |
+      #! /bin/bash -x
+      /usr/bin/apt install -y tinyproxy
+      /bin/sed -i"" "s/Allow 127.0.0.1/Allow 10.0.0.0\\/8/" /etc/tinyproxy/tinyproxy.conf
+      /bin/systemctl restart tinyproxy
+
+    tags:
+      BastionServer: "True"
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_bastion

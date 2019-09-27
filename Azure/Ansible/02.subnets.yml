@@ -1,0 +1,40 @@
+---
+- name: "Subnet: PublicSubnet"
+  azure_rm_subnet:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    virtual_network_name: "{{ vnet_demonetwork.state.name }}"
+    name: PublicSubnet
+    address_prefix_cidr: 10.10.11.0/24
+  register: subnet_public
+
+- name: "RouteTable: PrivateRouteTable"
+  azure_rm_routetable:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    name: "PrivateRouteTable"
+    location: "{{ Region }}"
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: rt_private
+
+- name: "RouteTable: PrivateRouteTable - Route: Deny_Internet_Access"
+  azure_rm_route:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    name: Deny_Internet_Access
+    route_table_name: "{{ rt_private.id | regex_replace('^((.*)/)([^\\/]+)$', '\\3') }}"
+    next_hop_type: none
+    address_prefix: 0.0.0.0/0
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+
+- name: "Subnet: PrivateSubnet"
+  azure_rm_subnet:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    virtual_network_name: "{{ vnet_demonetwork.state.name }}"
+    route_table: "{{ rt_private.id | regex_replace('^((.*)/)([^\\/]+)$', '\\3') }}"
+    name: PrivateSubnet
+    address_prefix_cidr: 10.10.21.0/24
+  register: subnet_private

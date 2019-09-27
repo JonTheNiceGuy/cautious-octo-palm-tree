@@ -1,0 +1,122 @@
+---
+- name: "NSG: DatabaseNSG"
+  azure_rm_securitygroup:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: DatabaseNSG
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+
+    rules:
+    - name: CommonManagement-I-100
+      priority: 100
+      direction: Inbound
+      access: Allow
+      protocol: Tcp
+      destination_port_range: 22
+      source_address_prefix: "{{ nic_bastionnic.state.ip_configurations[0].private_ip_address }}/32"
+  register: nsg_databasensg
+
+- name: "NIC: Database1NIC"
+  azure_rm_networkinterface:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: Database1NIC
+    virtual_network: "{{ vnet_demonetwork.state.name }}"
+    subnet_name: "{{ subnet_private.state.name }}"
+    security_group: "{{ nsg_databasensg.state.name }}"
+    ip_configurations:
+    - name: Database1-nic-ip
+      primary: yes
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: nic_database1nic
+
+- name: "VM: Database1"
+  azure_rm_virtualmachine:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: Database1
+    vm_size: Standard_B1s
+    # zones: 
+    # - "{{ Az1 }}"
+    # Unable to use Zones for VMs here due to https://github.com/ansible/ansible/issues/62861
+    network_interface_names: "{{ nic_database1nic.state.name }}"
+
+    image:
+      publisher: "Canonical"
+      offer: "UbuntuServer"
+      sku: "18.04-LTS"
+      version: "latest"
+
+    admin_username: "{{ VmUser }}"
+    ssh_public_keys: 
+    - path: "/home/{{ VmUser }}/.ssh/authorized_keys"
+      key_data: "{{ PublicKey }}"
+    ssh_password_enabled: false
+
+    managed_disk_type: Standard_LRS
+    os_disk_name: Database1-os-disk1
+    os_disk_caching: ReadWrite
+
+    tags:
+      DatabaseServer: "True"
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_database1
+
+- name: "NIC: Database2NIC"
+  azure_rm_networkinterface:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: Database2NIC
+    virtual_network: "{{ vnet_demonetwork.state.name }}"
+    subnet_name: "{{ subnet_private.state.name }}"
+    security_group: "{{ nsg_databasensg.state.name }}"
+    ip_configurations:
+    - name: Database2-nic-ip
+      primary: yes
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: nic_database2nic
+
+- name: "VM: Database2"
+  azure_rm_virtualmachine:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: Database2
+    vm_size: Standard_B1s
+    # zones: 
+    # - "{{ Az2 }}"
+    # Unable to use Zones for VMs here due to https://github.com/ansible/ansible/issues/62861
+    network_interface_names: "{{ nic_database2nic.state.name }}"
+
+    image:
+      publisher: "Canonical"
+      offer: "UbuntuServer"
+      sku: "18.04-LTS"
+      version: "latest"
+
+    admin_username: "{{ VmUser }}"
+    ssh_public_keys: 
+    - path: "/home/{{ VmUser }}/.ssh/authorized_keys"
+      key_data: "{{ PublicKey }}"
+    ssh_password_enabled: false
+
+    managed_disk_type: Standard_LRS
+    os_disk_name: Database2-os-disk1
+    os_disk_caching: ReadWrite
+
+    tags:
+      DatabaseServer: "True"
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_database2

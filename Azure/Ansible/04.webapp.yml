@@ -1,0 +1,218 @@
+---
+- name: "IP: WebAppLBIP"
+  azure_rm_publicipaddress:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: WebAppLBIP
+    allocation_method: Static
+    sku: Standard
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: ip_webapplb
+
+- name: "LB: WebAppLB"
+  azure_rm_loadbalancer:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    sku: Standard
+    name: WebAppLB
+    frontend_ip_configurations:
+      - name: WebAppLBFrontEnd
+        public_ip_address: "{{ ip_webapplb.state.name }}"
+    backend_address_pools:
+      - name: WebAppLBBackEndPool
+    probes:
+      - name: WebAppLB_HTTP_Probe
+        port: 80
+        protocol: Http
+        request_path: /
+        interval: 5
+        fail_count: 2
+    load_balancing_rules:
+      - name: WebAppLB_HTTP
+        frontend_ip_configuration: WebAppLBFrontEnd
+        backend_address_pool: WebAppLBBackEndPool
+        frontend_port: 80
+        backend_port: 80
+        protocol: Tcp
+        idle_timeout: 4
+        probe: WebAppLB_HTTP_Probe
+        enable_floating_ip: false
+        load_distribution: Default
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: lb_webapplb
+
+- name: "NSG: WebAppNSG"
+  azure_rm_securitygroup:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: WebAppNSG
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+
+    rules:
+    - name: CommonManagement-I-100
+      priority: 100
+      direction: Inbound
+      access: Allow
+      protocol: Tcp
+      destination_port_range: 22
+      source_address_prefix: "{{ nic_bastionnic.state.ip_configurations[0].private_ip_address }}/32"
+
+    - name: WebApp-I-101
+      priority: 101
+      direction: Inbound
+      access: Allow
+      protocol: Tcp
+      destination_port_range: 80
+      source_address_prefix: 0.0.0.0/0
+  register: nsg_webappnsg
+
+- name: "IP: WebApp1IP"
+  azure_rm_publicipaddress:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: WebApp1IP
+    sku: Standard
+    allocation_method: Static
+    # zones: "{{ Az1 }}"
+    # Above doesn't appear to be supported in Ansible2.8 or devel at 2019-09-26
+
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: ip_webapp1ip
+
+- name: "NIC: WebApp1NIC"
+  azure_rm_networkinterface:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: WebApp1NIC
+    virtual_network: "{{ vnet_demonetwork.state.name }}"
+    subnet_name: "{{ subnet_public.state.name }}"
+    security_group: "{{ nsg_webappnsg.state.name }}"
+    ip_configurations:
+    - name: WebApp1-nic-ip
+      public_ip_address_name: "{{ ip_webapp1ip.state.name }}"
+      load_balancer_backend_address_pools: "{{ lb_webapplb.state.backend_address_pools[0].id }}"
+      primary: yes
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: nic_webapp1nic
+
+- name: "VM: WebApp1"
+  azure_rm_virtualmachine:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: WebApp1
+    vm_size: Standard_B1s
+    # zones: 
+    # - "{{ Az1 }}"
+    # Unable to use Zones for VMs here due to https://github.com/ansible/ansible/issues/62861
+    network_interface_names: "{{ nic_webapp1nic.state.name }}"
+
+    image:
+      publisher: "Canonical"
+      offer: "UbuntuServer"
+      sku: "18.04-LTS"
+      version: "latest"
+
+    admin_username: "{{ VmUser }}"
+    ssh_public_keys: 
+    - path: "/home/{{ VmUser }}/.ssh/authorized_keys"
+      key_data: "{{ PublicKey }}"
+    ssh_password_enabled: false
+
+    managed_disk_type: Standard_LRS
+    os_disk_name: WebApp1-os-disk1
+    os_disk_caching: ReadWrite
+
+    custom_data: "{% include('user-data.sh.j2') %}"
+
+    tags:
+      WebAppServer: "True"
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_webapp1
+
+- name: "IP: WebApp2IP"
+  azure_rm_publicipaddress:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: WebApp2IP
+    sku: Standard
+    allocation_method: Static
+    # zones: "{{ Az2 }}"
+    # Above doesn't appear to be supported in Ansible2.8 or devel at 2019-09-26
+
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: ip_webapp2ip
+
+- name: "NIC: WebApp2NIC"
+  azure_rm_networkinterface:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: WebApp2NIC
+    virtual_network: "{{ vnet_demonetwork.state.name }}"
+    subnet_name: "{{ subnet_public.state.name }}"
+    security_group: "{{ nsg_webappnsg.state.name }}"
+    ip_configurations:
+    - name: WebApp2-nic-ip
+      public_ip_address_name: "{{ ip_webapp2ip.state.name }}"
+      load_balancer_backend_address_pools: "{{ lb_webapplb.state.backend_address_pools[0].id }}"
+      primary: yes
+    tags: 
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: nic_webapp2nic
+
+- name: "VM: WebApp2"
+  azure_rm_virtualmachine:
+    resource_group: "{{ rg_demoresourcegroup.state.name }}"
+    location: "{{ Region }}"
+    name: WebApp2
+    vm_size: Standard_B1s
+    # zones: 
+    # - "{{ Az2 }}"
+    # Unable to use Zones for VMs here due to https://github.com/ansible/ansible/issues/62861
+    network_interface_names: "{{ nic_webapp2nic.state.name }}"
+
+    image:
+      publisher: "Canonical"
+      offer: "UbuntuServer"
+      sku: "18.04-LTS"
+      version: "latest"
+
+    admin_username: "{{ VmUser }}"
+    ssh_public_keys: 
+    - path: "/home/{{ VmUser }}/.ssh/authorized_keys"
+      key_data: "{{ PublicKey }}"
+    ssh_password_enabled: false
+
+    managed_disk_type: Standard_LRS
+    os_disk_name: WebApp2-os-disk1
+    os_disk_caching: ReadWrite
+
+    custom_data: "{% include('user-data.sh.js') %}"
+
+    tags:
+      WebAppServer: "True"
+      Env: Demo
+      Provisioning: "{{ ProvisioningMethod }}"
+      Orchestration: "{{ OrchestrationMethod }}"
+  register: vm_webapp2
