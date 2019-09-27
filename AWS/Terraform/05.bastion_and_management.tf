@@ -17,6 +17,13 @@ resource "aws_security_group" "BastionSG" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    protocol = "tcp"
+    from_port = 8888
+    to_port = 8888
+    cidr_blocks = ["10.0.0.0/8"]
+  }
+
   egress {
     from_port       = 0
     to_port         = 0
@@ -33,6 +40,14 @@ resource "aws_instance" "Bastion" {
   subnet_id = "${aws_subnet.PublicAZ1Subnet.id}"
   vpc_security_group_ids = ["${aws_security_group.BastionSG.id}"]
   associate_public_ip_address = true
+
+  user_data = <<-EOT
+#!/bin/bash -x
+yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+yum install -y tinyproxy
+/bin/sed -i"" "s/Allow 127.0.0.1/Allow 10.0.0.0\\/8/" /etc/tinyproxy/tinyproxy.conf
+/bin/systemctl enable --now tinyproxy
+EOT
 
   tags = {
     Name          = "Bastion",

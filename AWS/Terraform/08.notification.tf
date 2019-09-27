@@ -30,6 +30,23 @@ resource "aws_instance" "NotificationServer" {
   ]
   associate_public_ip_address = false
 
+  user_data = <<-EOT
+#!/bin/bash -x
+export http_proxy=http://${aws_instance.Bastion.private_ip}:8888
+export https_proxy=$http_proxy
+until /usr/bin/amazon-linux-extras install -y ansible2 ; do /bin/sleep 10 ; done
+echo --- > /tmp/playbook.yml
+echo "- hosts: localhost" >> /tmp/playbook.yml
+echo "  gather_facts: false" >> /tmp/playbook.yml
+echo "  tasks:" >> /tmp/playbook.yml
+echo "  - copy:" >> /tmp/playbook.yml
+echo "      content: Confirmed" >> /tmp/playbook.yml
+echo "      dest: /var/log/ansible_run.out" >> /tmp/playbook.yml
+sleep 5
+ansible-playbook /tmp/playbook.yml
+sleep 5
+EOT
+
   tags = {
     Name               = "NotificationServer",
     NotificationServer = "True",
