@@ -26,6 +26,21 @@ resource "azurerm_virtual_machine" "NotificationServer" {
   os_profile {
     computer_name  = "NotificationServer"
     admin_username = "${var.vm_user}"
+    custom_data    = <<-EOT
+#! /bin/bash -x
+/usr/bin/apt update
+/usr/bin/apt install -y ansible
+echo --- > /tmp/playbook.yml
+echo "- hosts: localhost" >> /tmp/playbook.yml
+echo "  gather_facts: false" >> /tmp/playbook.yml
+echo "  tasks:" >> /tmp/playbook.yml
+echo "  - copy:" >> /tmp/playbook.yml
+echo "      content: Confirmed" >> /tmp/playbook.yml
+echo "      dest: /var/log/ansible_run.out" >> /tmp/playbook.yml
+sleep 5
+ansible-playbook /tmp/playbook.yml
+sleep 5
+EOT
   }
 
   os_profile_linux_config {
@@ -67,6 +82,18 @@ resource "azurerm_network_security_group" "NotificationServerNSG" {
   name                = "NotificationServerNSG"
   location            = "${azurerm_resource_group.ResourceGroup.location}"
   resource_group_name = "${azurerm_resource_group.ResourceGroup.name}"
+
+  security_rule {
+    name                       = "CommonManagement-I-100"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "${azurerm_network_interface.BastionNIC.private_ip_address}/32"
+    destination_address_prefix = "*"
+  }
 
   tags = {
     Env           = "Demo",
