@@ -1,0 +1,1 @@
+aws --region eu-central-1 cloudformation create-stack --stack-name demo2 --template-body file://Build.cform.yaml --parameters ParameterKey=KeyName,ParameterValue=Windows_2014-12-07.OpenSSH
